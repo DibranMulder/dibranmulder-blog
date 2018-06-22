@@ -66,6 +66,79 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Bedrijfskritische-applicaties-in-de-cloud" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/" class="article-date">
+  <time datetime="2018-06-22T07:12:39.000Z" itemprop="datePublished">2018-06-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/">Bedrijfskritische applicaties in de cloud</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Bedrijfskritische applicaties bouwen op een cloud platform als Microsoft Azure is nog niet zo makkelijk als het lijkt. De keuzes die developers en architecten maken kunnen enorme impact hebben op de continuiteit van uw business. </p>
+<h1 id="Storingen"><a href="#Storingen" class="headerlink" title="Storingen"></a>Storingen</h1><p>Elke Cloud dienst heeft te maken met storingen. Deze storingen kunnen voorkomen door hardware falen of door softwarematige storingen. In beide gevallen heeft dit direct impact op de continuiteit van de applicaties die u heeft draaien in de betreffende regio.</p>
+<blockquote>
+<p>Storingen van Cloud diensten kun je vaak terug vinden op hun status pagina’s.<br><a href="https://azure.microsoft.com/status" target="_blank" rel="noopener">https://azure.microsoft.com/status</a><br><a href="https://status.aws.amazon.com/" target="_blank" rel="noopener">https://status.aws.amazon.com/</a></p>
+</blockquote>
+<p>Deze storingen zijn jammer genoeg niet te voorkomen en hier hadden we vroeger ook al last van met onze eigen Virtual Private Services of Dedicated Rack Space. Maar wat nu als uw applicatie echt kritisch is? Hoe kunt u uw applicatie zo ontwerpen dat er sprake is van maximale availability and resilence?</p>
+<h1 id="Azure-Regions-en-Availability-Zones"><a href="#Azure-Regions-en-Availability-Zones" class="headerlink" title="Azure Regions en Availability Zones"></a>Azure Regions en Availability Zones</h1><p><img src="/images/azure regions.png"><br>Azure heeft momenteel <a href="https://azure.microsoft.com/en-us/global-infrastructure/regions/" target="_blank" rel="noopener">40 regio’s</a> beschikbaar en er zijn er 12 aangekondigd, waaronder de meest recent aangekondigde Norway East en Norway West.</p>
+<p>Veel mensen denken dat een Azure regio gelijk staat aan 1 datacenter maar dit is zeker niet het geval. In feite zijn het een set van datacenters die samen een regio vormen. Sommige regio’s zoals France central bevatten al 3 datacenters die fysiek meerdere kilometers van elkaar gescheiden zijn. Deze datacenters hebben allemaal een eigen elektriciteits- en wateraansluiting en overige voorzieningen waardoor een failure van 1 datacenter niet direct betekent dat de regio unavailable wordt.</p>
+<p>Maar hoe weet je nou welke applicaties van jou draaien in welke datacenters? Microsoft heeft dat met opzet geabstraheerd voor zijn gebruikers. Het is de bedoeling dat meer regio’s meer dan 3 datacenters krijgen waardoor ze automatisch een <a href="https://docs.microsoft.com/en-us/azure/availability-zones/az-overview" target="_blank" rel="noopener">availability zone</a> worden. Momenteel hebben alleen Central US en France Central support voor Availability zones en zijn er nog 3 in preview.</p>
+<ul>
+<li>Central US</li>
+<li>France Central</li>
+<li>East US 2 (Preview)</li>
+<li>West Europe (Preview)</li>
+<li>Southeast Asia (Preview)</li>
+</ul>
+<h2 id="Availability-zone"><a href="#Availability-zone" class="headerlink" title="Availability zone"></a>Availability zone</h2><p><img src="/images/azure-regional-architecture.png"><br>Er is sprake van een availability zone als een Azure regio meerdere fysiek gescheiden datacenters heeft. Zoals eerder gezegd hebben deze datacenters een eigen elektriciteits-, cooling- en netwerkvoorziening. Maar wat houdt zo’n availability zone nu in, en wat heb je eraan?</p>
+<p>Availability zones bieden een abstractie voor een set van diensten binnen Azure. Uw diensten worden, mits gebruikmakend van availability zones, automatisch gerepliceerd over de verschillende zones binnen de Azure regio. Wanneer er een storing optreedt in één van de datacenters dan wordt die betreffende zone uitgeschakeld en nemen de overige het werk over.</p>
+<h3 id="Services"><a href="#Services" class="headerlink" title="Services"></a>Services</h3><p>Availability zones zijn nog niet beschikbaar voor alle services binnen Azure. Gelukkig groeit de lijst wel, sterker nog deze is <a href="https://azure.microsoft.com/nl-nl/blog/azure-service-bus-is-now-offering-support-for-availability-zones-in-preview/" target="_blank" rel="noopener">support voor Service Bus aangekondigd</a> en daarmee is weer een belangrijke service ondersteund. Dit is een lijst van de beschikbare services:</p>
+<ul>
+<li>Linux Virtual Machines</li>
+<li>Windows Virtual Machines</li>
+<li>Virtual Machine Scale Sets</li>
+<li>Managed Disks</li>
+<li>Load Balancer</li>
+<li>Public IP address</li>
+<li>Zone-redundant storage</li>
+<li>SQL Database</li>
+<li>Event Hubs</li>
+<li>Service Bus</li>
+</ul>
+<blockquote>
+<p>Services op availability zones hebben geen additionele kosten.</p>
+</blockquote>
+<h2 id="Voorbeeld"><a href="#Voorbeeld" class="headerlink" title="Voorbeeld"></a>Voorbeeld</h2><p>Het aanzetten van availability zones op services is zo simpel als een vinkje aanzetten bij het aanmaken van de resource. Via ARM kan het gemakkelijk met de <code>zoneRedundant</code> property.</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">"resources": [</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="attr">"apiVersion"</span>: <span class="string">"2018-01-01-preview"</span>,</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"[parameters('serviceBusNamespaceName')]"</span>,</span><br><span class="line">        <span class="attr">"type"</span>: <span class="string">"Microsoft.ServiceBus/namespaces"</span>,</span><br><span class="line">        <span class="attr">"location"</span>: <span class="string">"[parameters('location')]"</span>,</span><br><span class="line">        <span class="attr">"sku"</span>: &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Premium"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"properties"</span>: &#123;</span><br><span class="line">            <span class="attr">"zoneRedundant"</span>: <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://dibranmulder.github.io/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/" data-id="cjipn1oc40001nctefdgy4zfa" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cloud-resilient-availability-zone/">cloud, resilient, availability, zone</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Werken-voor-Caesar" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/13/Werken-voor-Caesar/" class="article-date">
@@ -159,7 +232,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/06/13/Werken-voor-Caesar/" data-id="cjieg649u0000i8uni0ap1fya" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/06/13/Werken-voor-Caesar/" data-id="cjipn1oc60002ncteuf9b8o79" class="article-share-link">Share</a>
       
       
     </footer>
@@ -179,9 +252,23 @@
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloud-resilient-availability-zone/">cloud, resilient, availability, zone</a></li></ul>
+    </div>
+  </div>
+
 
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/cloud-resilient-availability-zone/" style="font-size: 10px;">cloud, resilient, availability, zone</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">
@@ -198,6 +285,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/">Bedrijfskritische applicaties in de cloud</a>
+          </li>
         
           <li>
             <a href="/2018/06/13/Werken-voor-Caesar/">Werken voor Caesar</a>
