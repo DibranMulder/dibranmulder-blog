@@ -184,6 +184,51 @@
 
 
   
+    <article id="post-Unique-keys-in-Azure-Cosmos-DB" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/" class="article-date">
+  <time datetime="2018-07-03T14:06:31.000Z" itemprop="datePublished">2018-07-03</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/">Unique keys in Azure Cosmos DB</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>NoSQL databases often don’t have support for database constraints. It doesn’t make sense to constraint since the data is schemaless and therefore where does the database has to constrain on?<br>Well its true for most cases but sometimes you just want to make sure that there’s only 1 document for an entity. Lets say your CosmosDb is managing client or user entities. It doesn’t make sense to have 2 users documents representing the same user, does it? It could result in bugs or other unwanted behavior.</p>
+<h2 id="Unique-keys"><a href="#Unique-keys" class="headerlink" title="Unique keys"></a>Unique keys</h2><p>CosmosDb supports Unique Keys, well I rather call them Unique Paths.<br>Lets say you have a document representing a client and it looks something like this:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"id"</span>: <span class="string">"1234567"</span>,</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"BigFirm"</span>,</span><br><span class="line">    <span class="attr">"country"</span>: <span class="string">"The Netherlands"</span>,</span><br><span class="line">    <span class="attr">"address"</span>: &#123;</span><br><span class="line">        <span class="attr">"street"</span>: <span class="string">"Sillicon Valley Road"</span>,</span><br><span class="line">        <span class="attr">"housenumber"</span>: <span class="string">"42"</span>,</span><br><span class="line">        <span class="attr">"state"</span>: <span class="string">"California"</span>,</span><br><span class="line">        <span class="attr">"country"</span>: <span class="string">"The Greatest Country on Earth"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"users"</span>: [</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Dibran"</span>,</span><br><span class="line">            <span class="attr">"title"</span>: <span class="string">"CEO"</span>,</span><br><span class="line">            <span class="attr">"username"</span>: <span class="string">"d.mulder@bigfirm.com"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Charles"</span>,</span><br><span class="line">            <span class="attr">"title"</span>: <span class="string">"Slave"</span>,</span><br><span class="line">            <span class="attr">"username"</span>: <span class="string">"charles@bigfirm.com"</span></span><br><span class="line">        &#125;</span><br><span class="line">    ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Lets say you want every document to have an unique combination of name and country. And secondly, you want to have unique list of user titles inside your users array. Its actually quite easy to do that, but the sad part is that you can only add unique keys at the creation of a collection. After that you’re not able to edit them anymore.<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">DocumentCollection myCollection = <span class="keyword">new</span> DocumentCollection();</span><br><span class="line">myCollection.Id = <span class="string">"ClientCollection"</span>;</span><br><span class="line">myCollection.UniqueKeyPolicy = <span class="keyword">new</span> UniqueKeyPolicy</span><br><span class="line">&#123;</span><br><span class="line">    UniqueKeys =</span><br><span class="line">    <span class="keyword">new</span> Collection&lt;UniqueKey&gt;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">new</span> UniqueKey &#123; Paths = <span class="keyword">new</span> Collection&lt;<span class="keyword">string</span>&gt; &#123; <span class="string">"/name"</span> , <span class="string">"/country"</span> &#125;&#125;</span><br><span class="line">        <span class="keyword">new</span> UniqueKey &#123; Paths = <span class="keyword">new</span> Collection&lt;<span class="keyword">string</span>&gt; &#123; <span class="string">"/users/title"</span> &#125; &#125;,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">await</span> client.CreateDocumentCollectionAsync(</span><br><span class="line">    UriFactory.CreateDatabaseUri(dataBase),</span><br><span class="line">    myCollection,</span><br><span class="line">    <span class="keyword">new</span> RequestOptions &#123; OfferThroughput = <span class="number">400</span> &#125;);</span><br></pre></td></tr></table></figure></p>
+<p>Its just that simple, now you’ll have a collection with a unique key policy. Actually if you look at the json definition of a collection then you’ll be able to see it, take a look:<br><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"id"</span>: <span class="string">"ClientCollection"</span>,</span><br><span class="line">  <span class="attr">"indexingPolicy"</span>: &#123;</span><br><span class="line">    <span class="attr">"indexingMode"</span>: <span class="string">"consistent"</span>,</span><br><span class="line">    <span class="attr">"automatic"</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">"includedPaths"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"path"</span>: <span class="string">"/*"</span>,</span><br><span class="line">        <span class="attr">"indexes"</span>: [</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="attr">"kind"</span>: <span class="string">"Range"</span>,</span><br><span class="line">            <span class="attr">"dataType"</span>: <span class="string">"Number"</span>,</span><br><span class="line">            <span class="attr">"precision"</span>: <span class="number">-1</span></span><br><span class="line">          &#125;,</span><br><span class="line">          &#123;</span><br><span class="line">            <span class="attr">"kind"</span>: <span class="string">"Hash"</span>,</span><br><span class="line">            <span class="attr">"dataType"</span>: <span class="string">"String"</span>,</span><br><span class="line">            <span class="attr">"precision"</span>: <span class="number">3</span></span><br><span class="line">          &#125;</span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"excludedPaths"</span>: []</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"uniqueKeyPolicy"</span>: &#123;</span><br><span class="line">    <span class="attr">"uniqueKeys"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"paths"</span>: [</span><br><span class="line">          <span class="string">"/name"</span>,</span><br><span class="line">          <span class="string">"/country"</span></span><br><span class="line">        ]</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"paths"</span>: [</span><br><span class="line">          <span class="string">"/users/title"</span></span><br><span class="line">        ]</span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Bear in mind that you’ll have to check for conflict exceptions in your code. If you’re violating the unique key policy then a <code>Microsoft.Azure.Documents.DocumentClientException</code> is thrown. This exceptions contains a <code>System.Net.HttpStatusCode.Conflict</code> status code, this is where you want to check on. Your code will look something like this:<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">try</span></span><br><span class="line">&#123;</span><br><span class="line">    response = <span class="keyword">await</span> client.CreateDocumentAsync(collectionUri, document, requestOptions);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">catch</span> (Microsoft.Azure.Documents.DocumentClientException ex)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span> ( ex.StatusCode == System.Net.HttpStatusCode.Conflict )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// Unique key constraint violation ...</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">// Some other issue ...</span></span><br><span class="line">        <span class="keyword">throw</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>Hopefully this helped a little, for further reading please see:<br><a href="https://docs.microsoft.com/en-us/azure/cosmos-db/unique-keys" target="_blank" rel="noopener">https://docs.microsoft.com/en-us/azure/cosmos-db/unique-keys</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://dibranmulder.github.io/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/" data-id="cjl3eyinz0000xgun6wf92yei" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-CosmosDb-UniqueKeys-PrimaryKey/">Azure, CosmosDb, UniqueKeys, PrimaryKey</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Expire-data-in-CosmosDb" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/06/25/Expire-data-in-CosmosDb/" class="article-date">
@@ -420,7 +465,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-CosmosDb-TTL-Expire/">Azure, CosmosDb, TTL, Expire</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloud-resilient-availability-zone/">cloud, resilient, availability, zone</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-CosmosDb-TTL-Expire/">Azure, CosmosDb, TTL, Expire</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-CosmosDb-UniqueKeys-PrimaryKey/">Azure, CosmosDb, UniqueKeys, PrimaryKey</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloud-resilient-availability-zone/">cloud, resilient, availability, zone</a></li></ul>
     </div>
   </div>
 
@@ -430,7 +475,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Azure-CosmosDb-TTL-Expire/" style="font-size: 10px;">Azure, CosmosDb, TTL, Expire</a> <a href="/tags/cloud-resilient-availability-zone/" style="font-size: 10px;">cloud, resilient, availability, zone</a>
+      <a href="/tags/Azure-CosmosDb-TTL-Expire/" style="font-size: 10px;">Azure, CosmosDb, TTL, Expire</a> <a href="/tags/Azure-CosmosDb-UniqueKeys-PrimaryKey/" style="font-size: 10px;">Azure, CosmosDb, UniqueKeys, PrimaryKey</a> <a href="/tags/cloud-resilient-availability-zone/" style="font-size: 10px;">cloud, resilient, availability, zone</a>
     </div>
   </div>
 
@@ -439,7 +484,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">augustus 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">juni 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">augustus 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">juli 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">juni 2018</a></li></ul>
     </div>
   </div>
 
@@ -453,6 +498,10 @@
         
           <li>
             <a href="/2018/08/20/Azure-Service-Health/">Azure Service Health</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/">Unique keys in Azure Cosmos DB</a>
           </li>
         
           <li>
