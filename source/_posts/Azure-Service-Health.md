@@ -31,7 +31,7 @@ Within the Azure portal it's easy to setup an Azure Service Health map, it takes
 1. We login to the Azure portal
 2. Click all services, filter on "Service health" (suggestion: mark it as favorite)
 
-<img src="/images/servicehealth/serviceHealth.png" style="height: 115px;" />
+<img src="/images/servicehealth/serviceHealth.PNG" style="height: 115px;" />
 
 3. Within the service health blade it's possible to setup the map, but also view:
     a. Service issues (any issues within Azure)
