@@ -6,16 +6,16 @@ tags: >-
 date: 2018-08-23 15:48:30
 ---
 
-Last week I was trying to build an API on top of Azure Functions with a SQL databse. This sounds like a pretty easy task however that was not the case, here's my story.
+Last week I was trying to build an API on top of Azure Functions with a backing SQL databse. This sounds like a pretty easy task however that was not the case, here's my story.
 
-Normally when I use a SQL database in a WebApp, and therefore also functions, I use an ORM mapper. I'm familiar with Entity Framework so thats what I tried. You might think why don't you use [Triggers and Bindings]((https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings) to connect with your SQL database? Well SQL binding and triggers aren't supported yet.
+Normally when I use a SQL database in a WebApp, and therefore this also applies to Functions, I use an ORM mapper. I'm pretty familiar with Entity Framework so thats what I tried. You might think why don't you use [Triggers and Bindings]((https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings) to connect with your SQL database? Well SQL bindings and triggers aren't supported yet.
 
-If you wan't to use Entity Framework inside Azure Functions V2 then you would have to use Entity Framework Core(EF Core) because EF core runs on .NET Core which supports .NET Standard 2.0, and .NET Standard 2.0 is the target for Azure Function v2 projects.
+If you wan't to use Entity Framework inside Azure Functions V2 then you would have to use Entity Framework Core (EF Core) since EF core runs on .NET Core which supports .NET Standard 2.0, and .NET Standard 2.0 is the target for Azure Functions v2 projects.
 
 ## Installation
-Well that having said I chose to have a separate class library for my EF Core database context to live in because I have multiple function apps inside my solution which all have to use that same database context.
+Well having that said I chose to have a separate class library for my EF Core database context to live in because I have multiple function apps inside my solution, which all have to use that same database context.
 
-EF core requires some Nuget packages, at the time of writing I use the 2.1.2 versions of the understanding packages. The `Design` package is required when you want to work with migrations, if your not planning to do that then forget about that package. The `SqlServer` package has actually a pretty cool story. It is possible to use [other underlying databases](https://docs.microsoft.com/en-us/ef/core/providers/) such as CosmosDb, MySql or what have you. 
+EF core requires some Nuget packages, at the time of writing I use the 2.1.2 versions of the understanding packages. The `Design` package is required when you want to work with migrations, if your not planning to do that then forget about that package. The `SqlServer` package has actually a pretty cool story. It is possible to use [other underlying databases](https://docs.microsoft.com/en-us/ef/core/providers/) such as CosmosDb, MySql or what have you. So only use that `SqlServer` package when you have a backing Sql Server database.
 
 ```
 Microsoft.EntityFrameworkCore
@@ -28,13 +28,13 @@ Do not install the following packages.
 Microsoft.EntityFrameworkCore.Tools
 Microsoft.EntityFrameworkCore.Tools.DotNet
 ```
-Those packages got [deprecated after .Net core 2.1.3](https://docs.microsoft.com/en-us/ef/core/miscellaneous/cli/dotnet). Make sure you have downloaded the latest .NET Core SDK. To check your local version execute:
+Those packages got [deprecated after .Net core 2.1.3](https://docs.microsoft.com/en-us/ef/core/miscellaneous/cli/dotnet). Before you continue, make sure you have downloaded the latest .NET Core SDK. To check your local version execute:
 ```
 > dotnet --version
 2.1.400
 ```
 ## Setting up the context
-Just like with the traditional EF you have to setup a DbContext with all the tables and models and stuff. Generally EF core is simular to EF but there are some differences. A good site with alot of documentation is: https://www.learnentityframeworkcore.com/
+Just like with the traditional EF you have to setup a DbContext class with all the DbSets/tables and models and stuff. Generally EF core is simular to EF but there are some differences. A good site with alot of documentation is: https://www.learnentityframeworkcore.com/. Your context might look like this:
 ```csharp
 public class MyContext : DbContext
 {
@@ -54,11 +54,9 @@ public class MyContext : DbContext
 }
 ```
 ## Azure Functions V2 Dependency injection
-After setting up your DbContext you probably want to use it in your Azure Functions. In order for you to effectively do that you have to setup proper dependency injection. Sadly this is not yet supported out of the box in Azure Functions so you'll have to build it your own. Don't be sad 
+After setting up your DbContext you probably want to use it in your Azure Functions. In order for you to effectively do that you have to setup proper dependency injection. Sadly this is not yet supported out of the box in Azure Functions V1 or V2 so you'll have to build it your own. Don't be sad I have found a pretty good implementation on [Github](https://github.com/BorisWilhelms/azure-function-dependency-injection). Once you have a project with that code you can just reference that project from within your Azure Functions project or just create a Nuget package.
 
-I have found a pretty good implementation on [Github](https://github.com/BorisWilhelms/azure-function-dependency-injection). Once you have a project with that code you can just reference that project from your Azure Functions project or just create a Nuget package.
-
-All you then have to do it setup a ServiceProvider and add your dependencies simular to what you would have done in ASP.net core for instance. Note that the package `Microsoft.EntityFrameworkCore` contains a `AddDbContext` method that is build for EF Core contexts.
+All you then have to do is setup a ServiceProvider and add your dependencies simular to what you would have done in ASP.net core for instance. Note that the package `Microsoft.EntityFrameworkCore` contains a `AddDbContext` method that is build for injecting EF Core DbContexts.
 ```csharp
 public class ServiceProviderBuilder : IServiceProviderBuilder
 {
@@ -108,13 +106,13 @@ So we've got a DbContext setup and injected it into our Azure Functions, the nex
 
 There is no such thing as `Enable-Migations` anymore, you just add a Migration and you've enabled it. The command to add a migrations is: `dotnet ef migrations add <name>`.
 
-Remember that I created a Shared Class Library with target .NET Standard? Well If you get the following error you've done the same as me. 
+Remember that I created a Shared Class Library which targets .NET Standard? Well If you get the following error you've done the same as I did:
 ```
 > dotnet ef migrations add InitialCreate
 
-Startup project 'Allego.Msp.Shared.csproj' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the Entity Framework Core .NET Command-line Tools with this project, add an executable project targeting .NET Core or .NET Framework that references this project, and set it as the startup project using --startup-project; or, update this project to cross-target .NET Core or .NET Framework.
+Startup project 'MyProject.Shared.csproj' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the Entity Framework Core .NET Command-line Tools with this project, add an executable project targeting .NET Core or .NET Framework that references this project, and set it as the startup project using --startup-project; or, update this project to cross-target .NET Core or .NET Framework.
 ```
-An easy workaround is to enable multiple TargetFrameworks, note that its plural, add an 's' after TargetFramework. If you add a netcoreapp version that your class lib can execute on its own, even without a `static void main()` or something like that.
+An easy workaround is to enable multiple TargetFrameworks, note that its plural, add an 's' after TargetFramework. If you add a netcoreapp target framework then your Class Libary can execute on its own, even without a `static void main()` or something like that.
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
@@ -132,7 +130,7 @@ If you execute the `dotnet ef migrations add <name>` again then you will probabl
 
 Unable to create an object of type 'MyContext'. Add an implementation of 'IDesignTimeDbContextFactory<MyContext>' to the project, or see https://go.microsoft.com/fwlink/?linkid=851728 for additional patterns supported at design time.
 ```
-This error states that you do not have setup a `DbContextOptions` object for your `DbContext` class. In other words during command line execution it doesn't know where to execute or check the migrations on. In order for you to workaround that you'll have to implement a `IDesignTimeDbContextFactory<MyContext>`. You'll not have to reference it anywhere, the tooling will just check for the existence and initiate the class. I chose to create an `appsettings.json` file and inject a connectionString inside that file.
+This error states that you do not have setup a `DbContextOptions` object for your `DbContext` class. In other words during command line execution it doesn't know where to execute or check the migrations on. In order for you to workaround this you'll have to implement a `IDesignTimeDbContextFactory<MyContext>`. You'll not have to reference it anywhere, the tooling will just check for the existence and initiate the class. I chose to create an `appsettings.json` file and inject a connectionString inside that file.
 ```csharp
 public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<MyContext>
 {
@@ -163,7 +161,7 @@ If you try the command again, it should work.
 Done. To undo this action, use 'ef migrations remove'
 ```
 ## CI / CD
-Last but not least you probably want to generate migrations and execute them from within your CI/CD environment. This way you get a fully managed way of migrating/managing your database in all different environments.
+Last but not least you probably want to generate migrations and execute them from your CI/CD environment. This way you'll get a fully managed way of migrating/managing your database for all different environments.
 ### VSTS
 <img src="/images/efcore/vstsbuild.png">
 In VSTS you just setup a build with the following steps:
@@ -173,7 +171,7 @@ In VSTS you just setup a build with the following steps:
     - Name the projects of your function apps.
 * dotnet custom
     - Add `ef` as custom command
-    - Add the arguments below. Name the project and the startup-project.
+    - Add the arguments below. Set the project and the startup-project to your Class Libary.
 * Stage the ARM template
 * Publish the artifacts
 
@@ -181,7 +179,7 @@ In VSTS you just setup a build with the following steps:
 migrations script -i --project $(Build.SourcesDirectory)\MyProject.Shared\MyProject.Shared.csproj --startup-project $(Build.SourcesDirectory)\MyProject.Shared.csproj\MyProject.Shared.csproj.csproj -o $(build.artifactstagingdirectory)\Migrations\scripts.sql
 ```
 
-Its important that you add the `-i` argument. This argument will generate the migrations script in such a way that it checks if the migation is already executed on the database. This prvents the pipeline from applying the same migrations twice. Notice that the migrations script is outputed to the artifacts directory which is publish at the lastest step of the build.
+Its important that you add the `-i` argument. This argument will generate the migrations script in such a way that it checks if the migation is already executed on the database. This prevents the pipeline from applying the same migrations twice. Notice that the migrations script is outputed to the artifacts directory which is published at the last step of the build.
 
 <img src="/images/efcore/vstsrelease.png">
 In the release part of the CI/CD pipeline you'll just have to the following:
