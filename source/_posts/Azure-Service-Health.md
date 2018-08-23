@@ -4,8 +4,7 @@ date: 2018-08-20 16:13:53
 tags:
 ---
 
-The Azure cloud provides data redundancy, global data centers, disaster recovery, SLA's, so you would easily forget that incidents can happen. 
-It might not be likely, with all the automatic healing, and services within Azure, but in case something is down, it is crucial to be able to have insights in what is happening, and even better, to be in control. This article describes the several options available for global Azure monitoring, and highlights the features in [Azure Service Health](https://azure.microsoft.com/en-us/features/service-health/) ([Azure Status](https://azure.microsoft.com/en/status/))
+The Azure cloud provides data redundancy, global data centers, disaster recovery, SLA's, so you would easily forget that incidents can happen. It might not be likely, with all the automatic healing, and services within Azure, but in case something is down, it is crucial to be able to have insights in what is happening, and even better, to be in control. This article describes the several options available for global Azure monitoring, and highlights the features in [Azure Service Health](https://azure.microsoft.com/en-us/features/service-health/) ([Azure Status](https://azure.microsoft.com/en/status/))
 
 ## Azure monitoring
 Azure contains a massive amount of services, and provides an extensive set of monitoring services. Monitoring can be done roughly on these levels (this is an short overview, more services are available): 
