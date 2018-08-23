@@ -84,7 +84,7 @@ Once you've setup the registration then it's very easy to inject it into your Az
 ```csharp
 public static class DemoFunction
 {
-    [FunctionName(DemoFunction)]
+    [FunctionName(nameof(DemoFunction))]
     public static async Task<IActionResult> Run(
         [HttpTrigger(
             AuthorizationLevel.Anonymous,
@@ -174,11 +174,9 @@ In VSTS you just setup a build with the following steps:
     - Add the arguments below. Set the project and the startup-project to your Class Library.
 * Stage the ARM template
 * Publish the artifacts
-
 ```
 migrations script -i --project $(Build.SourcesDirectory)\MyProject.Shared\MyProject.Shared.csproj --startup-project $(Build.SourcesDirectory)\MyProject.Shared.csproj\MyProject.Shared.csproj.csproj -o $(build.artifactstagingdirectory)\Migrations\scripts.sql
 ```
-
 Its important that you add the `-i` argument. This argument will generate the migrations script in such a way that it checks if the migration is already executed on the database. This prevents the pipeline from applying the same migrations twice. Notice that the migrations script is outputed to the artifacts directory which is published at the last step of the build.
 
 <img src="/images/efcore/vstsrelease.png">
