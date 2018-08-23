@@ -6,11 +6,11 @@ tags: >-
 date: 2018-08-23 15:48:30
 ---
 
-Last week I was trying to build an API on top of Azure Functions with a backing SQL databse. This sounds like a pretty easy task however that was not the case, here's my story.
+Last week I was trying to build an API on top of Azure Functions with a backing SQL database. This sounds like a pretty easy task however that was not the case, here's my story.
 
-Normally when I use a SQL database in a WebApp, and therefore this also applies to Functions, I use an ORM mapper. I'm pretty familiar with Entity Framework so thats what I tried. You might think why don't you use [Triggers and Bindings]((https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings) to connect with your SQL database? Well SQL bindings and triggers aren't supported yet.
+Normally when I use a SQL database in a WebApp, and therefore this also applies to Functions, I use an ORM mapper. I'm pretty familiar with Entity Framework so that's what I tried. You might think why don't you use [Triggers and Bindings]((https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings) to connect with your SQL database? Well SQL bindings and triggers aren't supported yet.
 
-If you wan't to use Entity Framework inside Azure Functions V2 then you would have to use Entity Framework Core (EF Core) since EF core runs on .NET Core which supports .NET Standard 2.0, and .NET Standard 2.0 is the target for Azure Functions v2 projects.
+If you want to use Entity Framework inside Azure Functions V2 then you would have to use Entity Framework Core (EF Core) since EF core runs on .NET Core which supports .NET Standard 2.0, and .NET Standard 2.0 is the target for Azure Functions v2 projects.
 
 ## Installation
 Well having that said I chose to have a separate class library for my EF Core database context to live in because I have multiple function apps inside my solution, which all have to use that same database context.
@@ -80,7 +80,7 @@ public class ServiceProviderBuilder : IServiceProviderBuilder
     }
 }
 ```
-Once you've setup the registration then its very easy to inject it into your Azure Functions, take a look at this sample:
+Once you've setup the registration then it's very easy to inject it into your Azure Functions, take a look at this sample:
 ```csharp
 public static class DemoFunction
 {
@@ -104,7 +104,7 @@ public static class DemoFunction
 ## Migrations
 So we've got a DbContext setup and injected it into our Azure Functions, the next thing what you probably want to do is to use Migrations. EF core comes with great command line tooling, remember when we were using the Package Manager console to execute some Powershell? Finally those days are over. With the new `dotnet ef` tooling you can just do it from the command line.
 
-There is no such thing as `Enable-Migations` anymore, you just add a Migration and you've enabled it. The command to add a migrations is: `dotnet ef migrations add <name>`.
+There is no such thing as `Enable-Migrations` anymore, you just add a Migration and you've enabled it. The command to add a migrations is: `dotnet ef migrations add <name>`.
 
 Remember that I created a Shared Class Library which targets .NET Standard? Well If you get the following error you've done the same as I did:
 ```
@@ -112,7 +112,7 @@ Remember that I created a Shared Class Library which targets .NET Standard? Well
 
 Startup project 'MyProject.Shared.csproj' targets framework '.NETStandard'. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the Entity Framework Core .NET Command-line Tools with this project, add an executable project targeting .NET Core or .NET Framework that references this project, and set it as the startup project using --startup-project; or, update this project to cross-target .NET Core or .NET Framework.
 ```
-An easy workaround is to enable multiple TargetFrameworks, note that its plural, add an 's' after TargetFramework. If you add a netcoreapp target framework then your Class Libary can execute on its own, even without a `static void main()` or something like that.
+An easy work around is to enable multiple TargetFrameworks, note that its plural, add an 's' after TargetFramework. If you add a netcoreapp target framework then your Class Library can execute on its own, even without a `static void main()` or something like that.
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
 
@@ -171,7 +171,7 @@ In VSTS you just setup a build with the following steps:
     - Name the projects of your function apps.
 * dotnet custom
     - Add `ef` as custom command
-    - Add the arguments below. Set the project and the startup-project to your Class Libary.
+    - Add the arguments below. Set the project and the startup-project to your Class Library.
 * Stage the ARM template
 * Publish the artifacts
 
@@ -179,7 +179,7 @@ In VSTS you just setup a build with the following steps:
 migrations script -i --project $(Build.SourcesDirectory)\MyProject.Shared\MyProject.Shared.csproj --startup-project $(Build.SourcesDirectory)\MyProject.Shared.csproj\MyProject.Shared.csproj.csproj -o $(build.artifactstagingdirectory)\Migrations\scripts.sql
 ```
 
-Its important that you add the `-i` argument. This argument will generate the migrations script in such a way that it checks if the migation is already executed on the database. This prevents the pipeline from applying the same migrations twice. Notice that the migrations script is outputed to the artifacts directory which is published at the last step of the build.
+Its important that you add the `-i` argument. This argument will generate the migrations script in such a way that it checks if the migration is already executed on the database. This prevents the pipeline from applying the same migrations twice. Notice that the migrations script is outputed to the artifacts directory which is published at the last step of the build.
 
 <img src="/images/efcore/vstsrelease.png">
 In the release part of the CI/CD pipeline you'll just have to the following:
@@ -190,7 +190,7 @@ In the release part of the CI/CD pipeline you'll just have to the following:
 * Execute the migrations script against the database
 * Restart the Azure Functions.
 
-Well thats it, you've got Azure Functions V2 running Entity Framework Core in Azure! Thanks for reading and happy coding.
+Well that's it, you've got Azure Functions V2 running Entity Framework Core in Azure! Thanks for reading and happy coding.
 
 ## Some tips and tricks
 Just some tips and tricks.
