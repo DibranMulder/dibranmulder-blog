@@ -6,5 +6,5 @@ Continuous delivery can get pretty complicated, especially when you have multipl
 
 ## The big picture
 <img src="/images/SPN.png" />
-As you probably know Azure has works with subscriptions and resource groups. You can have multiple Subscriptions, typically one for Production and one or more for Dev, Test and Acceptance. These subscriptions often contain douzens of resource groups. Resource groups typically contain a workload or logically separated unit of your workload, lets say a mircoservice for instance.
+As you probably know, Azure works with subscriptions and resource groups. You can have multiple subscriptions, typically one for Production and one or more for Dev, Test and Acceptance. These subscriptions often contain douzens of resource groups. Resource groups typically contain a workload or logically separated unit of your workload, lets say a mircoservice for instance.
 
