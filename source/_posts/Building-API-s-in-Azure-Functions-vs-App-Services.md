@@ -1,5 +1,5 @@
 ---
-title: 'Building API''s in Azure, Functions vs App Services'
+title: 'Building Serverless API''s in Azure'
 tags: 'Azure, API management, Functions, API Gateway.'
 date: 2018-10-19 15:44:40
 ---
