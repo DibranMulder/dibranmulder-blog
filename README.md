@@ -1,7 +1,7 @@
 # Dibran's blog
 
 Created with Hexo blogging software written in NodeJS.
-Hosted on github pages, using a [separate repository](https://github.com/CloudRepublic/cloudrepublic.github.io).
+Hosted on github pages, using a [separate repository](https://github.com/DibranMulder/dibranmulder.github.io).
 
 ## A new draft post
 ```
@@ -28,4 +28,4 @@ hexo clean
 hexo generate --deploy
 ```
 
-You need to have write rights on the [cloudrepublic.github.io](https://github.com/CloudRepublic/cloudrepublic.github.io) repository.
+You need to have write rights on the [dibranmulder.github.io](https://github.com/CloudRepublic/cloudrepublic.github.io) repository.
