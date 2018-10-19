@@ -76,10 +76,10 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-Azure-AD-Managed-Service-Identity" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-Building-API-s-in-Azure-Functions-vs-App-Services" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2018/10/05/Azure-AD-Managed-Service-Identity/" class="article-date">
-  <time datetime="2018-10-05T15:09:54.000Z" itemprop="datePublished">2018-10-05</time>
+    <a href="/2018/10/19/Building-API-s-in-Azure-Functions-vs-App-Services/" class="article-date">
+  <time datetime="2018-10-19T13:44:40.000Z" itemprop="datePublished">2018-10-19</time>
 </a>
     
   </div>
@@ -90,7 +90,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2018/10/05/Azure-AD-Managed-Service-Identity/">Azure AD Managed Service Identity</a>
+      <a class="article-title" href="/2018/10/19/Building-API-s-in-Azure-Functions-vs-App-Services/">Building API&#39;s in Azure, Functions vs App Services</a>
     </h1>
   
 
@@ -98,70 +98,77 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="What-is-Azure-AD-Managed-Service-Identity-MSI"><a href="#What-is-Azure-AD-Managed-Service-Identity-MSI" class="headerlink" title="What is Azure AD Managed Service Identity (MSI)"></a>What is Azure AD Managed Service Identity (MSI)</h1><p>Azure AD MSI is an Azure feature, which allows Identity managed access to Azure resources. This improves security, by reducing the need for applications, to have credentials in code, configurations. It creates an identity, which is linked to an Azure resource. The identity can then be granted access to Azure resources. This allows for access management on identity level, and one of the advantages, that the Identity management itself is done by Azure.</p>
-<p>​”A common challenge when building cloud applications is how to manage the credentials that need to be in your code for authenticating to cloud services. Keeping these credentials secure is an important task. Ideally, they never appear on developer workstations or get checked into source control. Azure Key Vault provides a way to securely store credentials and other keys and secrets, but your code needs to authenticate to Key Vault to retrieve them. Managed Service Identity (MSI) makes solving this problem simpler by giving Azure services an automatically managed identity in Azure Active Directory (Azure AD). You can use this identity to authenticate to any service that supports Azure AD authentication, including Key Vault, without having any credentials in your code.</p>
-<p>​Managed Service Identity comes with Azure Active Directory free, which is the default for Azure subscriptions. There is no additional cost for Managed Service Identity.”</p>
-<p>(from: <a href="https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/overview" target="_blank" rel="noopener">Azure AD Intro</a>)</p>
-<h2 id="Azure-AD-MSI-Setup-options"><a href="#Azure-AD-MSI-Setup-options" class="headerlink" title="Azure AD MSI Setup options"></a>Azure AD MSI Setup options</h2><p>There are several options to setup MSI, this article will give an impression how to setup AD MSI using the Azure Portal.</p>
-<h3 id="Azure-Portal"><a href="#Azure-Portal" class="headerlink" title="Azure Portal"></a>Azure Portal</h3><p>The most easiest method is to use the Azure Portal. This provides an intuitive way, and shows which features are supported. The suggested approach, is to setup features in the Azure portal to have a good idea on the desired setup, and then use the <a href="https://azure.microsoft.com/nl-nl/blog/azure-resource-explorer-a-new-tool-to-discover-the-azure-api/" target="_blank" rel="noopener">Azure resource explorer</a> to define the arm script.</p>
-<h3 id="​ARM"><a href="#​ARM" class="headerlink" title="​ARM"></a>​ARM</h3><p>Setting up the AD MSI with ARM is possible, at the moment there are some PowerShell scripts required to set up an VSTS pipeline. One thing to keep in mind, is that a new Azure Identity will be created, so the difficult part of the ARM template, is linking an existing users and grant them permissions.  </p>
-<h3 id="PowerShell-Azure-CLI"><a href="#PowerShell-Azure-CLI" class="headerlink" title="PowerShell / Azure CLI"></a>PowerShell / Azure CLI</h3><p>As with all Azure features, it’s possible to use PowerShell and the Azure CLI to setup the MSI. One important aspect of this feature, is that it’s managed in Azure, which means local debugging becomes complex. To resolve this, it’s possible to use the Azure CLI to is the easiest way to perform local debugging (see <a href="https://rahulpnath.com/blog/authenticating-with-azure-key-vault-using-managed-service-identity/" target="_blank" rel="noopener">this article</a>).​</p>
-<h3 id="Walkthrough-enable-Azure-AD-MSI-for-existing-functions"><a href="#Walkthrough-enable-Azure-AD-MSI-for-existing-functions" class="headerlink" title="Walkthrough - enable Azure AD MSI for existing functions"></a>Walkthrough - enable Azure AD MSI for existing functions</h3><h1 id="Objective"><a href="#Objective" class="headerlink" title="Objective"></a>Objective</h1><p>In this walkthrough, we enable Azure AD MSI for an existing Azure Function The function retrieves a secret from Azure KeyVault. In the initial implementation</p>
-<p>the function had to retrieve the KeyVault Id &amp; secret in the configuration file. </p>
-<h4 id="CONFIG-FILE"><a href="#CONFIG-FILE" class="headerlink" title="CONFIG FILE"></a>CONFIG FILE</h4><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- ClientId and ClientSecret refer to the web application registration with Azure Active Directory --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">add</span> <span class="attr">key</span>=<span class="string">"ClientId"</span> <span class="attr">value</span>=<span class="string">"clientid"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">add</span> <span class="attr">key</span>=<span class="string">"ClientSecret"</span> <span class="attr">value</span>=<span class="string">"clientsecret"</span> /&gt;</span></span><br><span class="line"> </span><br><span class="line"><span class="comment">&lt;!-- SecretUri is the URI for the secret in Azure Key Vault --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">add</span> <span class="attr">key</span>=<span class="string">"SecretUri"</span> <span class="attr">value</span>=<span class="string">"secreturi"</span> /&gt;</span>​</span><br></pre></td></tr></table></figure>
-<h4 id="CODE-TO-ACCESS-TOKEN"><a href="#CODE-TO-ACCESS-TOKEN" class="headerlink" title="CODE TO ACCESS TOKEN"></a>CODE TO ACCESS TOKEN</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//the method that will be provided to the KeyVaultClient</span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">async</span> Task&lt;<span class="keyword">string</span>&gt; <span class="title">GetToken</span>(<span class="params"><span class="keyword">string</span> authority, <span class="keyword">string</span> resource, <span class="keyword">string</span> scope</span>) </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">var</span> authContext = <span class="keyword">new</span> AuthenticationContext(authority);</span><br><span class="line">    ClientCredential clientCred = <span class="keyword">new</span> ClientCredential(GetSetting(<span class="string">"ClientId"</span>), (GetSetting(<span class="string">"ClientSecret"</span>));</span><br><span class="line">    AuthenticationResult result = <span class="keyword">await</span> authContext.AcquireTokenAsync(resource, clientCred);</span><br><span class="line">    <span class="keyword">if</span> (result == <span class="literal">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> InvalidOperationException(<span class="string">"Failed to obtain the JWT token"</span>);</span><br><span class="line">    <span class="keyword">return</span> result.AccessToken;</span><br><span class="line">&#125;&#125;​</span><br></pre></td></tr></table></figure>
-<h4 id="CODE-TO-RETRIEVE-THE-SECRET"><a href="#CODE-TO-RETRIEVE-THE-SECRET" class="headerlink" title="CODE TO RETRIEVE THE SECRET"></a>CODE TO RETRIEVE THE SECRET</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> kv = <span class="keyword">new</span> KeyVaultClient(<span class="keyword">new</span> KeyVaultClient.AuthenticationCallback(Utils.GetToken));</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> sec = <span class="keyword">await</span> kv.GetSecretAsync(WebConfigurationManager.AppSettings[<span class="string">"SecretUri"</span>]);</span><br></pre></td></tr></table></figure>
-<p>The problem with the code shown above is;</p>
-<ol>
-<li>Any change in the KeyVault security resulted in downtime in the function</li>
-<li>It was not clear who was able to access the KeyVault</li>
-</ol>
-<h3 id="Why-AD-MSI"><a href="#Why-AD-MSI" class="headerlink" title="Why AD MSI?"></a>Why AD MSI?</h3><p>With the new approach, we will make sure that only the function is able to access the KeyVault. By enabling Azure AD MSI, one the advantages, is that we do this using an Identity linked to the Azure function. In the new workflow, the Azure function has no need for any configuration, thus the function is more secure, and all the management of access, is done in the KeyVault. </p>
-<p><img src="/images/msi/overview.png"></p>
-<h3 id="Azure-Function-Enable-AD-MSI"><a href="#Azure-Function-Enable-AD-MSI" class="headerlink" title="Azure Function - Enable AD MSI"></a>Azure Function - Enable AD MSI</h3><p>Within our Azure function, we navigate to platform features, and click on ‘​​Managed Service Identity’ (note that this is also supported in several other Azure services such as WebApps). </p>
-<p><img src="/images/msi/capture.png"></p>
-<p>We can enable the feature, which will create an Azure Identity </p>
-<p><img src="/images/msi/enable.png"></p>
-<p>This has created an Identity, recognizable by the name of the function we created.</p>
-<p>We now have completed the first step, 2 things needs to be done:</p>
-<ol>
-<li>Manage access for the identity</li>
-<li>Update the Code in the function</li>
-</ol>
-<h3 id="Key-Vault-Access"><a href="#Key-Vault-Access" class="headerlink" title="Key Vault Access"></a>Key Vault Access</h3><p>The CCC provides a Blueprint and service to create a KeyVault, in summary, it allows for storage of secrets/certificates (with renewal procedures), and is highly recommended to store confidential data in (see: Architecture Blueprint Azure Key Vault.docx). We will assume a KeyVault is already available, and will configure the identity;</p>
-<ol>
-<li>We click on Access Control (IAM)</li>
-<li>Click Add<br>a. Choose the role ‘Reader’<br>b. Select ‘Function App’, in the dropdown ‘Assign Rights’ (note that we have several types available)</li>
-</ol>
-<p><img src="/images/msi/assignIdentity.png"></p>
-<p>  c. Choose the appropiate subscription<br>  d. Choose the appropiate resource group<br>  e. Select the Identity<br>  f. Click save</p>
-<p>What have we done? We now have granted the function to access the Key Vault, with the specified Identity. Any decision to revoke access, change permissions, can now be defined in the Key Vault resource itself.</p>
-<p>Our sample secret within the Key Vault;</p>
-<p><img src="/images/msi/secret.png" style="height: 500px;"></p>
-<h3 id="Azure-Function-Code-Change"><a href="#Azure-Function-Code-Change" class="headerlink" title="Azure Function - Code Change"></a>Azure Function - Code Change</h3><p>We have now ensured that the function can retrieve data ​from the KeyVault without requiring a configuration. We now need to make the following changes</p>
-<ol>
-<li>Remove the configuration for SecretKey-Value, so that we only have the URI configured;</li>
-</ol>
-<h4 id="CONFIG-FILE-1"><a href="#CONFIG-FILE-1" class="headerlink" title="CONFIG FILE"></a>CONFIG FILE</h4><pre><code>&lt;!-- SecretUri is the URI for the secret in Azure Key Vault --&gt;
-&lt;add key=&quot;SecretUri&quot; value=&quot;secreturi&quot; /&gt;​
-</code></pre><h4 id="CODE-TO-ACCESS-TOKEN-1"><a href="#CODE-TO-ACCESS-TOKEN-1" class="headerlink" title="CODE TO ACCESS TOKEN"></a>CODE TO ACCESS TOKEN</h4><p>Obsolete!</p>
-<h4 id="CODE-TO-RETRIEVE-THE-SECRET-1"><a href="#CODE-TO-RETRIEVE-THE-SECRET-1" class="headerlink" title="CODE TO RETRIEVE THE SECRET"></a>CODE TO RETRIEVE THE SECRET</h4><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> azureServiceTokenProvider = <span class="keyword">new</span> AzureServiceTokenProvider();​</span><br><span class="line"><span class="keyword">var</span> kvClient = <span class="keyword">new</span> KeyVaultClient(<span class="keyword">new</span> KeyVaultClient.AuthenticationCallback(azureServiceTokenProvider.KeyVaultTokenCallback));</span><br><span class="line"><span class="keyword">var</span> result = <span class="keyword">await</span> kvClient.GetSecretAsync(GetSetting(<span class="string">"SecretUri"</span>));</span><br><span class="line">log.Info(result.Value);</span><br></pre></td></tr></table></figure>
-<p>Output from the function</p>
-<p><img src="/images/msi/demo.png"></p>
-<h3 id="Summary"><a href="#Summary" class="headerlink" title="Summary"></a>Summary</h3><p>As shown in this simple example, it’s quite easy to enable Azure AD MSI for your application. Using Azure AD MSI, results in a lot of benefits. Besides manually configuring this, it’s also possible to set this up using ARM scripts, VSTS, with the following article​​</p>
-<h3 id="Resources"><a href="#Resources" class="headerlink" title="Resources"></a>Resources</h3><h4 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h4><p><a href="https://azure.microsoft.com/nl-nl/blog/keep-credentials-out-of-code-introducing-azure-ad-managed-service-identity/" target="_blank" rel="noopener">https://azure.microsoft.com/nl-nl/blog/keep-credentials-out-of-code-introducing-azure-ad-managed-service-identity/</a></p>
-<h4 id="Supported-Azure-services"><a href="#Supported-Azure-services" class="headerlink" title="Supported Azure services"></a>Supported Azure services</h4><p><a href="https://docs.microsoft.com/nl-nl/azure/active-directory/managed-service-identity/overview" target="_blank" rel="noopener">https://docs.microsoft.com/nl-nl/azure/active-directory/managed-service-identity/overview</a></p>
-<h4 id="Web-Application-accessing-a-KeyVault-using-Azure-AD-MSI"><a href="#Web-Application-accessing-a-KeyVault-using-Azure-AD-MSI" class="headerlink" title="Web Application accessing a KeyVault using Azure AD MSI"></a>Web Application accessing a KeyVault using Azure AD MSI</h4><p><a href="https://docs.microsoft.com/nl-nl/azure/key-vault/key-vault-use-from-web-application" target="_blank" rel="noopener">https://docs.microsoft.com/nl-nl/azure/key-vault/key-vault-use-from-web-application</a></p>
-<h4 id="VSTS-and-MSI"><a href="#VSTS-and-MSI" class="headerlink" title="VSTS and MSI"></a>VSTS and MSI</h4><p><a href="https://blogs.msdn.microsoft.com/azuredev/2017/10/15/devops-using-azure-msi-with-vsts-step-by-step/" target="_blank" rel="noopener">https://blogs.msdn.microsoft.com/azuredev/2017/10/15/devops-using-azure-msi-with-vsts-step-by-step/</a></p>
-<h4 id="Debugging-a-function-locally-with-Azure-AD-MSI"><a href="#Debugging-a-function-locally-with-Azure-AD-MSI" class="headerlink" title="Debugging a function locally with Azure AD MSI"></a>Debugging a function locally with Azure AD MSI</h4><p><a href="https://rahulpnath.com/blog/authenticating-with-azure-key-vault-using-managed-service-identity/" target="_blank" rel="noopener">https://rahulpnath.com/blog/authenticating-with-azure-key-vault-using-managed-service-identity/</a><br>​</p>
+        <p>Serverless is a hot topic in Cloud Development. Serverless cloud computing is all about scalability, performance, minimizing cost and maximizing business value by eliminating complexity. Its a true game changer but is it always the best approach for your software? In this blogpost I’ll address the pros and cons regarding Serverless API’s.</p>
+<h2 id="REST-API’s"><a href="#REST-API’s" class="headerlink" title="REST API’s"></a>REST API’s</h2><p>We’ve been building API’s for decades, with techniques like RCP, SOAP, Enterprise Service Buses, etc. The majority of the people nowadays build their API’s based on a REST or RESTful architecture. How does this trend match the new serverless hipe thats taking place? In this blogpost we are trying to find that out. </p>
+<p>I’ll assume that you know what REST is but in case you don’t. Its based on the following principles: </p>
+<blockquote>
+<p>performance, scalability, simplicity, modifiability, visibility, portability, and reliability</p>
+</blockquote>
+<p>In order for an architecture to achieve those goals, REST has the following constraints:</p>
+<blockquote>
+<p>CLient-Server Architecture, Statelessness, Cachability, Layered system, Code on demand and Uniform Interface. </p>
+</blockquote>
+<p>More information about the constraints and principles can be found <a href="https://en.wikipedia.org/wiki/Representational_state_transfer" target="_blank" rel="noopener">here</a></p>
+<p>So at first sight, it doesn’t really look that Serverless computing and REST are in conflict. Moreover Serverless computing might be complementary to REST. Lets have a closer look.</p>
+<h2 id="Serverless"><a href="#Serverless" class="headerlink" title="Serverless"></a>Serverless</h2><p>According to Martin Fowler’s blog this is the definition of Serverless:</p>
+<blockquote>
+<p>Serverless can also mean applications where server-side logic is still written by the application developer, but, unlike traditional architectures, it’s run in stateless compute containers that are event-triggered, ephemeral (may only last for one invocation), and fully managed by a third party. One way to think of this is “Functions as a Service” or “FaaS”.</p>
+</blockquote>
+<p><a href="https://martinfowler.com/articles/serverless.html" target="_blank" rel="noopener">Source from Martin Fowler</a></p>
+<p>So the key takeaways are: event triggered, ephemeral and fully managed by a third party. So those Functions are serverside logic, triggered by events. In a REST based scenario that trigger might be an Http call, representing a REST operation. So far so good.</p>
+<p><img src="/images/serverless/Serverless API.png"></p>
+<p>So we might end up building Azure Functions for every REST operation. The client application then has to orchestrate the REST calls to the right functions. This might be done via naming conventions, a pattern which is common in REST based architectures. If you are questioning if this is really a good idea, hold that thought! I’ll come back to it.</p>
+<p>Calling Azure Functions directly from your Client feels like a bad idea. Azure Functions should be those little snippets of code just executing at crazy scale and they should perform really well. On the other hand, we want to have an API with all kinds of additional features, we need those features to have an effective and future proof communication with our clients. Im talking about:</p>
+<ul>
+<li>SSL termination</li>
+<li>Authentication</li>
+<li>IP whitelisting</li>
+<li>Client rate limiting (throttling)</li>
+<li>Logging and monitoring</li>
+<li>Response caching</li>
+<li>Web application firewall</li>
+<li>GZIP compression</li>
+<li>Servicing static content</li>
+<li>Restfull routing</li>
+<li>Versioning</li>
+<li>Health checking</li>
+<li>Documentation</li>
+</ul>
+<p>These features and Functions don’t fit really well. If we end up adding all those features to our Azure Functions we should just have picked ASP.net core and we could have build that API way faster than we would have in Azure Functions. So how do we bring those features in play while keeping our Azure Functions lean and mean. Well we need some sort of Application Gateway. A service sitting in the middle of the client and our Azure Functions which takes care of most of the features above. This Application Gateway should scale very good and shouldn’t introduce a new bottle neck. Think of it as an Load Balancer.</p>
+<p><img src="/images/serverless/Serverless.png"></p>
+<h2 id="Azure-API-Gateway"><a href="#Azure-API-Gateway" class="headerlink" title="Azure API Gateway"></a>Azure API Gateway</h2><p>Azure offers a set of services which have the possibility to route traffic, cache and so on. However most of them are not a good fit to act as an API Gateway. </p>
+<p>The following services are just for routing traffic on different levels but don’t implement documentation, logging, analytics, caching and so on:</p>
+<ul>
+<li>Azure Traffic manager<br>DNS based (global) load balancer and fail-over solution</li>
+<li>Azure Application Gateway<br>HTTP/HTTPS based redirect + SSL offload + Web Appliation Firewall (OWASP) solution </li>
+<li>Azure Load Balancer<br>Generic (port based) load balancer -&gt; often used for IaaS VM’s</li>
+</ul>
+<h2 id="Azure-API-Management"><a href="#Azure-API-Management" class="headerlink" title="Azure API Management"></a>Azure API Management</h2><p>The only service which is an actual API Gateway implementation is Azure API management. It includes caching, routing, security, documentation, logging and so on. Its a comprehensive suite of features, and I’m planning to write a bunch of blog posts about it. So stay tuned.</p>
+<p>One thing to consider is the pricing of Azure API management. Its quite expensive with a start rate of about 670 dollars. If you want to do Global API management or VNET integration you will have to pick the Premium tier, which comes at 2700 dollar a month. So the key take away is that if you want to build a REST API on Functions you might have to give in some features or pay a little extra.</p>
+<p><img src="/images/serverless/costs.png"></p>
+<p>A best practise is to share the API management instance across a company. In this way you can manage all outbound API’s from one service. Also you are managing all clients inside one service, offboaring clients is way easier this way.</p>
+<p><img src="/images/serverless/announcement.png"><br><a href="https://www.youtube.com/watch?v=BoZimCedfq8&amp;t=39m58s" target="_blank" rel="noopener">Link to the Video</a></p>
+<p>On Ignite 2018, Microsoft announced an API Management Consumption based tier. This tier should be optimized to handle Serverless scenarios. So basically Microsoft confirmes the need for API Gateway when building Serverless architectures.</p>
+<p>This consumption tier is now in private preview, hopefully it will be in public preview and later GA very soon. In the near future I will write some blog posts on:</p>
+<ul>
+<li>How to configure an API management instance via ARM and Azure DevOps</li>
+<li>How to add Azure Functions to API management via Azure DevOps.</li>
+<li>Building REST API’s on Azure Functions. Including features like:<ul>
+<li>Dependency injection</li>
+<li>Response caching</li>
+<li>Authentication</li>
+</ul>
+</li>
+</ul>
+<p>Stay tuned and happy coding.</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/05/Azure-AD-Managed-Service-Identity/" data-id="cjmw5bwfg0002tste6ctd95h2" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/19/Building-API-s-in-Azure-Functions-vs-App-Services/" data-id="cjng2g6mh000bp4unsutdk87j" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-AD-MSI-Mananged-Service-Identity/">Azure, AD, MSI, Mananged Service Identity</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-API-management-Functions-API-Gateway/">Azure, API management, Functions, API Gateway.</a></li></ul>
 
     </footer>
   </div>
@@ -251,7 +258,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/08/23/Azure-functions-V2-with-EF-Core/" data-id="cjmw5bwge000ctste74l7ly9x" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/08/23/Azure-functions-V2-with-EF-Core/" data-id="cjng2g6me0008p4une1mxwrgq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-Entity-Framework-Core-EF-Core-Migrations-VSTS-Functions-V2-Dependency-Injection/">Azure, Entity Framework Core, EF Core, Migrations, VSTS, Functions V2, Dependency Injection.</a></li></ul>
@@ -361,7 +368,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/08/20/Azure-Service-Health/" data-id="cjmw5bwfn0005tste06n1a8m6" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/08/20/Azure-Service-Health/" data-id="cjng2g6ma0004p4unycoczedi" class="article-share-link">Share</a>
       
       
     </footer>
@@ -404,7 +411,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/" data-id="cjmw5bwgr000mtsteel9b9faw" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/" data-id="cjng2g6mn000dp4un5v3elh3w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-CosmosDb-UniqueKeys-PrimaryKey/">Azure, CosmosDb, UniqueKeys, PrimaryKey</a></li></ul>
@@ -451,7 +458,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/06/25/Expire-data-in-CosmosDb/" data-id="cjmw5bwgf000dtstedtfv99se" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/06/25/Expire-data-in-CosmosDb/" data-id="cjng2g6mf0009p4una47ldpdo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-CosmosDb-TTL-Expire/">Azure, CosmosDb, TTL, Expire</a></li></ul>
@@ -524,7 +531,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/" data-id="cjmw5bwgb000atste8z38ri53" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/" data-id="cjng2g6mc0005p4unlijuhuuh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cloud-resilient-availability-zone/">cloud, resilient, availability, zone</a></li></ul>
@@ -629,7 +636,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/06/13/Werken-voor-Caesar/" data-id="cjmw5bwgo000ltste6zwcim60" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/06/13/Werken-voor-Caesar/" data-id="cjng2g6mq000fp4unms2egquq" class="article-share-link">Share</a>
       
       
     </footer>
@@ -652,7 +659,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-AD-MSI-Mananged-Service-Identity/">Azure, AD, MSI, Mananged Service Identity</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-CosmosDb-TTL-Expire/">Azure, CosmosDb, TTL, Expire</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-CosmosDb-UniqueKeys-PrimaryKey/">Azure, CosmosDb, UniqueKeys, PrimaryKey</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-Entity-Framework-Core-EF-Core-Migrations-VSTS-Functions-V2-Dependency-Injection/">Azure, Entity Framework Core, EF Core, Migrations, VSTS, Functions V2, Dependency Injection.</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloud-resilient-availability-zone/">cloud, resilient, availability, zone</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-API-management-Functions-API-Gateway/">Azure, API management, Functions, API Gateway.</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-CosmosDb-TTL-Expire/">Azure, CosmosDb, TTL, Expire</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-CosmosDb-UniqueKeys-PrimaryKey/">Azure, CosmosDb, UniqueKeys, PrimaryKey</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-Entity-Framework-Core-EF-Core-Migrations-VSTS-Functions-V2-Dependency-Injection/">Azure, Entity Framework Core, EF Core, Migrations, VSTS, Functions V2, Dependency Injection.</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloud-resilient-availability-zone/">cloud, resilient, availability, zone</a></li></ul>
     </div>
   </div>
 
@@ -662,7 +669,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Azure-AD-MSI-Mananged-Service-Identity/" style="font-size: 10px;">Azure, AD, MSI, Mananged Service Identity</a> <a href="/tags/Azure-CosmosDb-TTL-Expire/" style="font-size: 10px;">Azure, CosmosDb, TTL, Expire</a> <a href="/tags/Azure-CosmosDb-UniqueKeys-PrimaryKey/" style="font-size: 10px;">Azure, CosmosDb, UniqueKeys, PrimaryKey</a> <a href="/tags/Azure-Entity-Framework-Core-EF-Core-Migrations-VSTS-Functions-V2-Dependency-Injection/" style="font-size: 10px;">Azure, Entity Framework Core, EF Core, Migrations, VSTS, Functions V2, Dependency Injection.</a> <a href="/tags/cloud-resilient-availability-zone/" style="font-size: 10px;">cloud, resilient, availability, zone</a>
+      <a href="/tags/Azure-API-management-Functions-API-Gateway/" style="font-size: 10px;">Azure, API management, Functions, API Gateway.</a> <a href="/tags/Azure-CosmosDb-TTL-Expire/" style="font-size: 10px;">Azure, CosmosDb, TTL, Expire</a> <a href="/tags/Azure-CosmosDb-UniqueKeys-PrimaryKey/" style="font-size: 10px;">Azure, CosmosDb, UniqueKeys, PrimaryKey</a> <a href="/tags/Azure-Entity-Framework-Core-EF-Core-Migrations-VSTS-Functions-V2-Dependency-Injection/" style="font-size: 10px;">Azure, Entity Framework Core, EF Core, Migrations, VSTS, Functions V2, Dependency Injection.</a> <a href="/tags/cloud-resilient-availability-zone/" style="font-size: 10px;">cloud, resilient, availability, zone</a>
     </div>
   </div>
 
@@ -684,7 +691,7 @@
       <ul>
         
           <li>
-            <a href="/2018/10/05/Azure-AD-Managed-Service-Identity/">Azure AD Managed Service Identity</a>
+            <a href="/2018/10/19/Building-API-s-in-Azure-Functions-vs-App-Services/">Building API&#39;s in Azure, Functions vs App Services</a>
           </li>
         
           <li>
