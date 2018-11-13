@@ -98,9 +98,9 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>Storing secrets inside your build and release pipeline variables is a bad practise and Microsoft advises not to use it but use KeyVault instead.<br>However because its also very convenient and easy to use people use it alot. But what are the risks of using this? Are your secrets save?</p>
+        <p>Storing secrets inside your build and release pipeline variables is a bad practise and Microsoft advises not to use it, but use KeyVault instead. However fact is, is that its also very convenient and easy to use, so people are going to use it alot. But what are the risks of using this? Are your secrets save?</p>
 <h2 id="Decrypting-secrets"><a href="#Decrypting-secrets" class="headerlink" title="Decrypting secrets"></a>Decrypting secrets</h2><p>May 17th of 2018 FoxIt published <a href="https://www.fox-it.com/en/insights/blogs/blog/introducing-team-foundation-server-decryption-tool/" target="_blank" rel="noopener">a tool</a> to decrypt secrets from the TFS/VSTS and now AzureDevops variable stores. This tool on itself is a huge risk from a compliance and security perspective.</p>
-<p>Imagine you store connection strings or passwords inside the variables store and they provide access to your production databases. Malicious developers are now able to retrieve those secrets and do their harm. Without any trace. Since you are not able to get a trace log from Azure DevOps.</p>
+<p>Imagine you store connection strings or passwords inside the variables store and they provide access to your production databases. Malicious developers are now able to retrieve those secrets and do their harm. Without any trace. Since you are not able to get a trace log from Azure DevOps. A better way the prevent variables to be decrypted is the read them from KeyVault. </p>
 <p><img src="/images/secrets.png"></p>
 <h2 id="Secrets-in-ARM-scripts"><a href="#Secrets-in-ARM-scripts" class="headerlink" title="Secrets in ARM scripts"></a>Secrets in ARM scripts</h2><p>Another risk with using secrets inside ARM scripts is the risk of exposing variables without knowing it. ARM parameters are often strings, for example: usernames, password, connection strings, etc. Those strings might come from trusted sources maybe even a KeyVault. One mistake thats often made is that those parameters are of type string. See the example below, these are the parameters for a basic WebApp ARM Script. In this WebApp we want to access a database and we want to have the connection string to that database as a parameter.</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"parameters"</span>: &#123;</span><br><span class="line">        <span class="attr">"webAppName"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"string"</span>,</span><br><span class="line">            <span class="attr">"metadata"</span>: &#123;</span><br><span class="line">                <span class="attr">"description"</span>: <span class="string">"Base name of the resource such as web app name and app service plan "</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"minLength"</span>: <span class="number">2</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"sku"</span>:&#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"string"</span>,</span><br><span class="line">            <span class="attr">"defaultValue"</span> : <span class="string">"S1"</span>,</span><br><span class="line">            <span class="attr">"metadata"</span>: &#123;</span><br><span class="line">                <span class="attr">"description"</span>: <span class="string">"The SKU of App Service Plan, by defaut is standard  S1"</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"location"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"string"</span>,</span><br><span class="line">            <span class="attr">"defaultValue"</span>: <span class="string">"[resourceGroup().location]"</span>,</span><br><span class="line">            <span class="attr">"metadata"</span>: &#123;</span><br><span class="line">                <span class="attr">"description"</span>: <span class="string">"Location for all resources."</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"databaseConnectionString"</span>: &#123;</span><br><span class="line">            <span class="attr">"type"</span>: <span class="string">"string"</span>,</span><br><span class="line">            <span class="attr">"defaultValue"</span>: <span class="string">""</span>,</span><br><span class="line">            <span class="attr">"metadata"</span>: &#123;</span><br><span class="line">                <span class="attr">"description"</span>: <span class="string">"The connection string to the database."</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -110,7 +110,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/25/Secrets-in-Azure-DevOps-the-bad-parts/" data-id="cjnoh2w1s000gqsunyrn47o55" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/25/Secrets-in-Azure-DevOps-the-bad-parts/" data-id="cjofwp3p5000drkunt8iqicnr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-DevOps-Secrets-FoxIt-Azure-ResourceGroups/">Azure DevOps, Secrets, FoxIt, Azure, ResourceGroups.</a></li></ul>
@@ -211,7 +211,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/19/Building-Serverless-APIs-in-Azure/" data-id="cjnoh2w1o000cqsun7pp6p7w8" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/19/Building-Serverless-APIs-in-Azure/" data-id="cjofwp3pg000mrkuntikevi98" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-API-management-Functions-API-Gateway/">Azure, API management, Functions, API Gateway.</a></li></ul>
@@ -305,7 +305,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/05/Azure-AD-Managed-Service-Identity/" data-id="cjnoh2w1h0004qsunufcoyia9" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/05/Azure-AD-Managed-Service-Identity/" data-id="cjofwp3os0003rkuneutjvt20" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-AD-MSI-Mananged-Service-Identity/">Azure, AD, MSI, Mananged Service Identity</a></li></ul>
@@ -398,7 +398,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/08/23/Azure-functions-V2-with-EF-Core/" data-id="cjnoh2w1m0009qsunocy5xpvv" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/08/23/Azure-functions-V2-with-EF-Core/" data-id="cjofwp3p4000brkunb46moy6a" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-Entity-Framework-Core-EF-Core-Migrations-VSTS-Functions-V2-Dependency-Injection/">Azure, Entity Framework Core, EF Core, Migrations, VSTS, Functions V2, Dependency Injection.</a></li></ul>
@@ -508,7 +508,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/08/20/Azure-Service-Health/" data-id="cjnoh2w1i0005qsunrzhm50xj" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/08/20/Azure-Service-Health/" data-id="cjofwp3p00008rkunqwub1oit" class="article-share-link">Share</a>
       
       
     </footer>
@@ -551,7 +551,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/" data-id="cjnoh2w1q000eqsun1zxifxd5" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/" data-id="cjofwp3pb000jrkunosctg3m4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-CosmosDb-UniqueKeys-PrimaryKey/">Azure, CosmosDb, UniqueKeys, PrimaryKey</a></li></ul>
@@ -598,7 +598,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/06/25/Expire-data-in-CosmosDb/" data-id="cjnoh2w1n000aqsunhbkcrzqf" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/06/25/Expire-data-in-CosmosDb/" data-id="cjofwp3p9000hrkun84xny151" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-CosmosDb-TTL-Expire/">Azure, CosmosDb, TTL, Expire</a></li></ul>
@@ -671,7 +671,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/" data-id="cjnoh2w1k0006qsung8x7q712" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/" data-id="cjofwp3p6000frkunuzb8nnag" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cloud-resilient-availability-zone/">cloud, resilient, availability, zone</a></li></ul>
@@ -776,7 +776,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/06/13/Werken-voor-Caesar/" data-id="cjnoh2w1t000iqsunspkdjy5k" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/06/13/Werken-voor-Caesar/" data-id="cjofwp3pe000lrkuna6awvgy3" class="article-share-link">Share</a>
       
       
     </footer>
