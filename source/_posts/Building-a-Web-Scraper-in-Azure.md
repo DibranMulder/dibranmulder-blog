@@ -1,9 +1,7 @@
 ---
 title: Building a Web Scraper in Azure
-date: 2018-12-03 14:11:48
 tags:
 ---
-
 Building a web scraper is pretty hard. Doing it in Azure is harder. Utilizing Serverless and PaaS services is challenging. I dont want to hire a VM and just deploy the scraper there because I need it to be scalable, secondly I only want to pay for actual usage and not for a VM thats idle.
 
 ## The case
@@ -19,7 +17,58 @@ For orchestrating the scraper I was thinking about using Azure Functions again. 
 
 ## The details
 
+
 ### Puppeteer, TypeScript and NodeJs
+I wanted to brush up my TypeScript and NodeJS skills since it has been a while that I seriously developed in TypeScript. The last time I did something significant I was still using Visual Studio instead of VS Code for TypeScript development. So here's the story to get a puppeteer scraper working in NodeJs, Express and TypeScript.
+
+#### Depedencies
+```cmd
+npm install puppeteer --save
+npm install azure-storage --save
+
+npm install @types/puppeteer --save-dev
+```
+
+`CTRL + SHIFT B` To compile
+sourcemaps enabled.
+tsconfig.json
+```json
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "lib": ["es5", "es6", "dom"],
+        "noImplicitAny": false,
+        "sourceMap": true
+    }
+}
+```
+
+Debug
+launch.json
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "tsc",
+            "name": "Launch Program ",
+            "sourceMaps": true,
+            "program": "${workspaceFolder}\\scraper.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        }
+    ]
+}
+```
+
+#### Async programming with Node
+- Express json
+
 
 ### Docker and Azure
 
