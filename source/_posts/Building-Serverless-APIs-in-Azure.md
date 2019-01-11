@@ -1,6 +1,10 @@
 ---
 title: 'Building Serverless API''s in Azure'
-tags: 'Azure, API management, Functions, API Gateway.'
+tags: 
+- Azure
+- API management
+- Functions
+- API Gateway
 date: 2018-10-19 15:44:40
 ---
 Serverless is a hot topic in Cloud Development. Serverless cloud computing is all about scalability, performance, minimizing cost and maximizing business value by eliminating complexity. Its a true game changer but is it always the best approach for your software? In this blogpost I'll address the pros and cons regarding Serverless API's.

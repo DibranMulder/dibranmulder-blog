@@ -1,6 +1,9 @@
 ---
 title: Azure AD Managed Service Identity
-tags: 'Azure, AD, MSI, Mananged Service Identity'
+tags: 
+- Azure
+- AD
+- MSI
 date: 2018-10-05 17:09:54
 ---
 

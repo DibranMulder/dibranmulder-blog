@@ -1,8 +1,13 @@
 ---
 title: Azure functions V2 with EF Core
-tags: >-
-  Azure, Entity Framework Core, EF Core, Migrations, VSTS, Functions V2,
-  Dependency Injection.
+tags: 
+- Azure
+- Entity Framework Core
+- EF Core
+- Migrations
+- VSTS
+- Functions V2
+- Dependency Injection
 date: 2018-08-23 15:48:30
 ---
 

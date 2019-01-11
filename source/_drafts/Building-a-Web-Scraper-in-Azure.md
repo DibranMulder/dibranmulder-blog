@@ -2,10 +2,10 @@
 title: Building a Web Scraper in Azure
 tags:
 ---
-Building a web scraper is pretty hard. Doing it in Azure is harder. Utilizing Serverless and PaaS services is challenging. I dont want to hire a VM and just deploy the scraper there because I need it to be scalable, secondly I only want to pay for actual usage and not for a VM thats idle.
+Building a web scraper is pretty hard. Doing it in Azure is harder. Utilizing Serverless and PaaS services is challenging. I don't want to pay for a VM and just deploy the scraper on it because I need the solution to be scalable. Secondly I only want to pay for actual usage and not for a VM thats idle.
 
 ## The case
-I want to scrape certain websites 2 a day. At 10:00 UTC and at 18:00 UTC. This frequency might change in the future so I don't want to have it build in hard coded. I'm scraping ecommerce sites and the pages that need to be scraped depend on a list of id's comming from a database. So the input for the scraper is dynamic. Lastly the output of the scraper has to be stored in a database. Later on I will have to develop some UI which discloses the information for ecommerce traders.
+I want to scrape certain websites twice a day. At 10:00 UTC and at 18:00 UTC. This frequency might change in the future so I don't want to have it build in hard coded. I'm scraping ecommerce sites and the pages that need to be scraped depend on a list of id's comming from a database. So the input for the scraper is dynamic. Lastly the output of the scraper has to be stored in a database. Later on I will have to develop some UI which discloses the information for ecommerce traders.
 
 ## The solution
 <img src="/images/scraper/azure-web-scraper.png" />
@@ -16,7 +16,7 @@ My initial idea was to run puppeteer inside an Azure Function, however after som
 For orchestrating the scraper I was thinking about using Azure Functions again. But then on a bright day I figured I would use Azure Logic Apps instead. Logic Apps are great for defining and running workflows and look like a perfect fit. They are pay per usage and are easy to develop!
 
 ## The details
-
+So conceptua
 
 ### Puppeteer, TypeScript and NodeJs
 I wanted to brush up my TypeScript and NodeJS skills since it has been a while that I seriously developed in TypeScript. The last time I did something significant I was still using Visual Studio instead of VS Code for TypeScript development. So here's the story to get a puppeteer scraper working in NodeJs, Express and TypeScript.
@@ -72,8 +72,10 @@ launch.json
 
 ### Docker and Azure
 
-### Azure Logic Apps
 
+
+### Azure Logic Apps
+<img src="/images/scraper/logicapp.PNG" />
 
 https://medium.freecodecamp.org/the-ultimate-guide-to-web-scraping-with-node-js-daa2027dcd3
 

@@ -1,6 +1,8 @@
 ---
 title: Expire data in CosmosDb
-tags: 'Azure, CosmosDb, TTL, Expire'
+tags: 
+- Azure
+- CosmosDb
 date: 2018-06-25 11:50:22
 ---
 

@@ -1,6 +1,8 @@
 ---
 title: Azure API  Management overview
-tags: 'Azure, API Management'
+tags:
+- Azure
+- API Management
 date: 2018-11-13 16:43:45
 ---
 

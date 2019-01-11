@@ -1,6 +1,8 @@
 ---
 title: Secrets in Azure DevOps the bad parts
-tags: 'Azure DevOps, Secrets, FoxIt, Azure, ResourceGroups.'
+tags: 
+- Azure DevOps
+- Security
 date: 2018-10-25 12:30:57
 ---
 

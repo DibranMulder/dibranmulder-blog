@@ -1,6 +1,8 @@
 ---
 title: Bedrijfskritische applicaties in de cloud
-tags: 'cloud, resilient, availability, zone'
+tags: 
+- Resilient
+- Availability Zone
 date: 2018-06-22 09:12:39
 ---
 

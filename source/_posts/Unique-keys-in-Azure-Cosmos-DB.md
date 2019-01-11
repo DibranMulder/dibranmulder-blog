@@ -1,6 +1,8 @@
 ---
 title: Unique keys in Azure Cosmos DB
-tags: 'Azure, CosmosDb, UniqueKeys, PrimaryKey'
+tags: 
+- Azure
+- CosmosDb
 date: 2018-07-03 16:06:31
 ---
 
