@@ -76,6 +76,51 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Azure-Functions-Http-Response-caching" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/01/14/Azure-Functions-Http-Response-caching/" class="article-date">
+  <time datetime="2019-01-14T13:06:13.000Z" itemprop="datePublished">2019-01-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/01/14/Azure-Functions-Http-Response-caching/">Azure Functions Http Response caching</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>As you might know its a <a href="https://docs.microsoft.com/en-us/azure/azure-functions/functions-best-practices#write-functions-to-be-stateless" target="_blank" rel="noopener">best practice to keep your Azure Functions stateless</a>. That means that also in memory caching should not be done inside your functions. Especially when you’re using a consumption plan. Your cache will be recycled when the plan goes to sleep.<br>What a lot of fokes forget is that the Http protocol as of Http 1.1 contains caching. Setting the right caching headers on a <code>HttpResponseMessage</code> is actually quite easy.</p>
+<p><a href="https://docs.microsoft.com/en-us/aspnet/core/performance/caching/response?view=aspnetcore-2.2" target="_blank" rel="noopener">In ASP.net core we even had packages for us to do that</a>. Those obviously don’t work for functions since the attributes can’t be placed on top of Azure Functions with Http Triggers. So sadly we’ve to write code to se the right headers. However its so easy that you won’t be sad for long.</p>
+<p>Here’s a simple Http triggered function. Notice the <code>CreateCachedResponse</code> instead of <code>CreateResponse</code> extension method.<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">FunctionName(<span class="meta-string">"SomeFunction"</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">async</span> Task&lt;HttpResponseMessage&gt; <span class="title">SomeHttpTriggeredFunctions</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">    [HttpTrigger(AuthorizationLevel.Anonymous, <span class="string">"post"</span>, Route = <span class="string">"some/route"</span></span>)] HttpRequestMessage req,</span></span><br><span class="line"><span class="function">    ILogger log)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">try</span></span><br><span class="line">    &#123;</span><br><span class="line">        log.LogInformation(<span class="string">"SomeFunction called"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Do something</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> req.CreateCachedResponse(HttpStatusCode.OK, response);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span> (Exception e)</span><br><span class="line">    &#123;</span><br><span class="line">        log.LogError(e.Message, e);</span><br><span class="line">        <span class="keyword">return</span> req.CreateErrorResponse(HttpStatusCode.BadRequest, e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>In the extension method we will simply add some headers to the response.<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> System;</span><br><span class="line"><span class="keyword">using</span> System.Net;</span><br><span class="line"><span class="keyword">using</span> System.Net.Http;</span><br><span class="line"><span class="keyword">using</span> System.Net.Http.Headers;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title">CacheResponseExtensions</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> HttpResponseMessage CreateCachedResponse&lt;T&gt;(<span class="keyword">this</span> HttpRequestMessage request, HttpStatusCode statusCode, T <span class="keyword">value</span>, TimeSpan? maxAge = <span class="literal">null</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        HttpResponseMessage responseMessage = request.CreateResponse&lt;T&gt;(statusCode, <span class="keyword">value</span>);</span><br><span class="line">        responseMessage.Headers.CacheControl = <span class="keyword">new</span> CacheControlHeaderValue()</span><br><span class="line">        &#123;</span><br><span class="line">            Public = <span class="literal">true</span>,</span><br><span class="line">            MaxAge = maxAge ?? defaultTimeSpan</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="keyword">return</span> responseMessage;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>And voila we’ve got client side caching working.</p>
+<p><img src="/images/cache-functions.png"></p>
+<p><a href="https://docs.microsoft.com/en-us/aspnet/core/performance/caching/response?view=aspnetcore-2.2" target="_blank" rel="noopener">https://docs.microsoft.com/en-us/aspnet/core/performance/caching/response?view=aspnetcore-2.2</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://dibranmulder.github.io/2019/01/14/Azure-Functions-Http-Response-caching/" data-id="cjqwcdunb000dzkunil6krofr" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cache/">Cache</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functions/">Functions</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Azure-API-Management-ARM-Cheatsheet" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2018/12/19/Azure-API-Management-ARM-Cheatsheet/" class="article-date">
@@ -123,7 +168,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/12/19/Azure-API-Management-ARM-Cheatsheet/" data-id="cjqs41qsd0003skunl2us6zwt" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/12/19/Azure-API-Management-ARM-Cheatsheet/" data-id="cjqwcdun40009zkunpx7vpp3x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/API-Management/">API Management</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li></ul>
@@ -191,7 +236,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/11/13/Azure-Api-Management-overview/" data-id="cjqs41qsf0004skundskj84av" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/11/13/Azure-Api-Management-overview/" data-id="cjqwcdun10006zkunsruy7nsl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/API-Management/">API Management</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li></ul>
@@ -237,7 +282,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/25/Secrets-in-Azure-DevOps-the-bad-parts/" data-id="cjqs41qsm000dskunloe67r2a" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/25/Secrets-in-Azure-DevOps-the-bad-parts/" data-id="cjqwcdunk000izkunj4c5dheq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-DevOps/">Azure DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Security/">Security</a></li></ul>
@@ -338,7 +383,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/19/Building-Serverless-APIs-in-Azure/" data-id="cjqs41qsi0008skung3gsjzxb" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/19/Building-Serverless-APIs-in-Azure/" data-id="cjqwcdunh000gzkuni86s35mp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/API-Gateway/">API Gateway</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/API-management/">API management</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functions/">Functions</a></li></ul>
@@ -432,7 +477,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/05/Azure-AD-Managed-Service-Identity/" data-id="cjqs41qs40000skunwgywsz5t" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/05/Azure-AD-Managed-Service-Identity/" data-id="cjqwcdumx0004zkunu0a0yta8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AD/">AD</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MSI/">MSI</a></li></ul>
@@ -525,7 +570,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/08/23/Azure-functions-V2-with-EF-Core/" data-id="cjqs41qsg0005skun7s68sk8a" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/08/23/Azure-functions-V2-with-EF-Core/" data-id="cjqwcdunm000kzkunxj82bitu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Dependency-Injection/">Dependency Injection</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EF-Core/">EF Core</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Entity-Framework-Core/">Entity Framework Core</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functions-V2/">Functions V2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Migrations/">Migrations</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VSTS/">VSTS</a></li></ul>
@@ -635,7 +680,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/08/20/Azure-Service-Health/" data-id="cjqs41qs90001skuncskaivqw" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/08/20/Azure-Service-Health/" data-id="cjqwcdun5000azkunfvmy0zbi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Service-Health/">Service Health</a></li></ul>
@@ -680,7 +725,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/" data-id="cjqs41qsm000fskun0bq6yehw" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/07/03/Unique-keys-in-Azure-Cosmos-DB/" data-id="cjqwcduns000qzkunu2nrwurs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CosmosDb/">CosmosDb</a></li></ul>
@@ -727,83 +772,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/06/25/Expire-data-in-CosmosDb/" data-id="cjqs41qsj0009skunt6xwwxr5" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/06/25/Expire-data-in-CosmosDb/" data-id="cjqwcduno000nzkun9lhmgb4q" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CosmosDb/">CosmosDb</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Bedrijfskritische-applicaties-in-de-cloud" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/" class="article-date">
-  <time datetime="2018-06-22T07:12:39.000Z" itemprop="datePublished">2018-06-22</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/">Bedrijfskritische applicaties in de cloud</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Bedrijfskritische applicaties bouwen op een cloud platform als Microsoft Azure is nog niet zo makkelijk als het lijkt. De keuzes die developers en architecten maken kunnen enorme impact hebben op de continuiteit van uw business. </p>
-<h1 id="Storingen"><a href="#Storingen" class="headerlink" title="Storingen"></a>Storingen</h1><p>Elke Cloud dienst heeft te maken met storingen. Deze storingen kunnen voorkomen door hardware falen of door softwarematige storingen. In beide gevallen heeft dit direct impact op de continuiteit van de applicaties die u heeft draaien in de betreffende regio.</p>
-<blockquote>
-<p>Storingen van Cloud diensten kun je vaak terug vinden op hun status pagina’s.<br><a href="https://azure.microsoft.com/status" target="_blank" rel="noopener">https://azure.microsoft.com/status</a><br><a href="https://status.aws.amazon.com/" target="_blank" rel="noopener">https://status.aws.amazon.com/</a></p>
-</blockquote>
-<p>Deze storingen zijn jammer genoeg niet te voorkomen en hier hadden we vroeger ook al last van met onze eigen Virtual Private Services of Dedicated Rack Space. Maar wat nu als uw applicatie echt kritisch is? Hoe kunt u uw applicatie zo ontwerpen dat er sprake is van maximale availability and resilence?</p>
-<h1 id="Azure-Regions-en-Availability-Zones"><a href="#Azure-Regions-en-Availability-Zones" class="headerlink" title="Azure Regions en Availability Zones"></a>Azure Regions en Availability Zones</h1><p><img src="/images/azure regions.png"><br>Azure heeft momenteel <a href="https://azure.microsoft.com/en-us/global-infrastructure/regions/" target="_blank" rel="noopener">40 regio’s</a> beschikbaar en er zijn er 12 aangekondigd, waaronder de meest recent aangekondigde Norway East en Norway West.</p>
-<p>Veel mensen denken dat een Azure regio gelijk staat aan 1 datacenter maar dit is zeker niet het geval. In feite zijn het een set van datacenters die samen een regio vormen. Sommige regio’s zoals France central bevatten al 3 datacenters die fysiek meerdere kilometers van elkaar gescheiden zijn. Deze datacenters hebben allemaal een eigen elektriciteits- en wateraansluiting en overige voorzieningen waardoor een failure van 1 datacenter niet direct betekent dat de regio unavailable wordt.</p>
-<p>Maar hoe weet je nou welke applicaties van jou draaien in welke datacenters? Microsoft heeft dat met opzet geabstraheerd voor zijn gebruikers. Het is de bedoeling dat meer regio’s meer dan 3 datacenters krijgen waardoor ze automatisch een <a href="https://docs.microsoft.com/en-us/azure/availability-zones/az-overview" target="_blank" rel="noopener">availability zone</a> worden. Momenteel hebben alleen Central US en France Central support voor Availability zones en zijn er nog 3 in preview.</p>
-<ul>
-<li>Central US</li>
-<li>France Central</li>
-<li>East US 2 (Preview)</li>
-<li>West Europe (Preview)</li>
-<li>Southeast Asia (Preview)</li>
-</ul>
-<h2 id="Availability-zone"><a href="#Availability-zone" class="headerlink" title="Availability zone"></a>Availability zone</h2><p><img src="/images/azure-regional-architecture.png"><br>Er is sprake van een availability zone als een Azure regio meerdere fysiek gescheiden datacenters heeft. Zoals eerder gezegd hebben deze datacenters een eigen elektriciteits-, cooling- en netwerkvoorziening. Maar wat houdt zo’n availability zone nu in, en wat heb je eraan?</p>
-<p>Availability zones bieden een abstractie voor een set van diensten binnen Azure. Uw diensten worden, mits gebruikmakend van availability zones, automatisch gerepliceerd over de verschillende zones binnen de Azure regio. Wanneer er een storing optreedt in één van de datacenters dan wordt die betreffende zone uitgeschakeld en nemen de overige het werk over.</p>
-<h3 id="Services"><a href="#Services" class="headerlink" title="Services"></a>Services</h3><p>Availability zones zijn nog niet beschikbaar voor alle services binnen Azure. Gelukkig groeit de lijst wel, sterker nog deze is <a href="https://azure.microsoft.com/nl-nl/blog/azure-service-bus-is-now-offering-support-for-availability-zones-in-preview/" target="_blank" rel="noopener">support voor Service Bus aangekondigd</a> en daarmee is weer een belangrijke service ondersteund. Dit is een lijst van de beschikbare services:</p>
-<ul>
-<li>Linux Virtual Machines</li>
-<li>Windows Virtual Machines</li>
-<li>Virtual Machine Scale Sets</li>
-<li>Managed Disks</li>
-<li>Load Balancer</li>
-<li>Public IP address</li>
-<li>Zone-redundant storage</li>
-<li>SQL Database</li>
-<li>Event Hubs</li>
-<li>Service Bus</li>
-</ul>
-<blockquote>
-<p>Services op availability zones hebben geen additionele kosten.</p>
-</blockquote>
-<h2 id="Voorbeeld"><a href="#Voorbeeld" class="headerlink" title="Voorbeeld"></a>Voorbeeld</h2><p>Het aanzetten van availability zones op services is zo simpel als een vinkje aanzetten bij het aanmaken van de resource. Via ARM kan het gemakkelijk met de <code>zoneRedundant</code> property.</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">"resources": [</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="attr">"apiVersion"</span>: <span class="string">"2018-01-01-preview"</span>,</span><br><span class="line">        <span class="attr">"name"</span>: <span class="string">"[parameters('serviceBusNamespaceName')]"</span>,</span><br><span class="line">        <span class="attr">"type"</span>: <span class="string">"Microsoft.ServiceBus/namespaces"</span>,</span><br><span class="line">        <span class="attr">"location"</span>: <span class="string">"[parameters('location')]"</span>,</span><br><span class="line">        <span class="attr">"sku"</span>: &#123;</span><br><span class="line">            <span class="attr">"name"</span>: <span class="string">"Premium"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"properties"</span>: &#123;</span><br><span class="line">            <span class="attr">"zoneRedundant"</span>: <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">],</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/06/22/Bedrijfskritische-applicaties-in-de-cloud/" data-id="cjqs41qsl000bskunofa6wwbk" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Availability-Zone/">Availability Zone</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Resilient/">Resilient</a></li></ul>
 
     </footer>
   </div>
@@ -830,7 +802,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AD/">AD</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Gateway/">API Gateway</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Management/">API Management</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-management/">API management</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Availability-Zone/">Availability Zone</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure/">Azure</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-DevOps/">Azure DevOps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Caesar/">Caesar</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CosmosDb/">CosmosDb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Dependency-Injection/">Dependency Injection</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EF-Core/">EF Core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Entity-Framework-Core/">Entity Framework Core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Functions/">Functions</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Functions-V2/">Functions V2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MSI/">MSI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Migrations/">Migrations</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Resilient/">Resilient</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Security/">Security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Service-Health/">Service Health</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSTS/">VSTS</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AD/">AD</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Gateway/">API Gateway</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Management/">API Management</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-management/">API management</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Availability-Zone/">Availability Zone</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure/">Azure</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-DevOps/">Azure DevOps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cache/">Cache</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Caesar/">Caesar</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CosmosDb/">CosmosDb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Dependency-Injection/">Dependency Injection</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EF-Core/">EF Core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Entity-Framework-Core/">Entity Framework Core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Functions/">Functions</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Functions-V2/">Functions V2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MSI/">MSI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Migrations/">Migrations</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Resilient/">Resilient</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Security/">Security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Service-Health/">Service Health</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSTS/">VSTS</a></li></ul>
     </div>
   </div>
 
@@ -840,7 +812,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/AD/" style="font-size: 10px;">AD</a> <a href="/tags/API-Gateway/" style="font-size: 10px;">API Gateway</a> <a href="/tags/API-Management/" style="font-size: 15px;">API Management</a> <a href="/tags/API-management/" style="font-size: 10px;">API management</a> <a href="/tags/Availability-Zone/" style="font-size: 10px;">Availability Zone</a> <a href="/tags/Azure/" style="font-size: 20px;">Azure</a> <a href="/tags/Azure-DevOps/" style="font-size: 10px;">Azure DevOps</a> <a href="/tags/Caesar/" style="font-size: 10px;">Caesar</a> <a href="/tags/CosmosDb/" style="font-size: 15px;">CosmosDb</a> <a href="/tags/Dependency-Injection/" style="font-size: 10px;">Dependency Injection</a> <a href="/tags/EF-Core/" style="font-size: 10px;">EF Core</a> <a href="/tags/Entity-Framework-Core/" style="font-size: 10px;">Entity Framework Core</a> <a href="/tags/Functions/" style="font-size: 10px;">Functions</a> <a href="/tags/Functions-V2/" style="font-size: 10px;">Functions V2</a> <a href="/tags/MSI/" style="font-size: 10px;">MSI</a> <a href="/tags/Migrations/" style="font-size: 10px;">Migrations</a> <a href="/tags/Resilient/" style="font-size: 10px;">Resilient</a> <a href="/tags/Security/" style="font-size: 10px;">Security</a> <a href="/tags/Service-Health/" style="font-size: 10px;">Service Health</a> <a href="/tags/VSTS/" style="font-size: 10px;">VSTS</a>
+      <a href="/tags/AD/" style="font-size: 10px;">AD</a> <a href="/tags/API-Gateway/" style="font-size: 10px;">API Gateway</a> <a href="/tags/API-Management/" style="font-size: 15px;">API Management</a> <a href="/tags/API-management/" style="font-size: 10px;">API management</a> <a href="/tags/Availability-Zone/" style="font-size: 10px;">Availability Zone</a> <a href="/tags/Azure/" style="font-size: 20px;">Azure</a> <a href="/tags/Azure-DevOps/" style="font-size: 10px;">Azure DevOps</a> <a href="/tags/Cache/" style="font-size: 10px;">Cache</a> <a href="/tags/Caesar/" style="font-size: 10px;">Caesar</a> <a href="/tags/CosmosDb/" style="font-size: 15px;">CosmosDb</a> <a href="/tags/Dependency-Injection/" style="font-size: 10px;">Dependency Injection</a> <a href="/tags/EF-Core/" style="font-size: 10px;">EF Core</a> <a href="/tags/Entity-Framework-Core/" style="font-size: 10px;">Entity Framework Core</a> <a href="/tags/Functions/" style="font-size: 15px;">Functions</a> <a href="/tags/Functions-V2/" style="font-size: 10px;">Functions V2</a> <a href="/tags/MSI/" style="font-size: 10px;">MSI</a> <a href="/tags/Migrations/" style="font-size: 10px;">Migrations</a> <a href="/tags/Resilient/" style="font-size: 10px;">Resilient</a> <a href="/tags/Security/" style="font-size: 10px;">Security</a> <a href="/tags/Service-Health/" style="font-size: 10px;">Service Health</a> <a href="/tags/VSTS/" style="font-size: 10px;">VSTS</a>
     </div>
   </div>
 
@@ -849,7 +821,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">december 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">november 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">oktober 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">augustus 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">juli 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">juni 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">januari 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">december 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">november 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">oktober 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">augustus 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">juli 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">juni 2018</a></li></ul>
     </div>
   </div>
 
@@ -860,6 +832,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/01/14/Azure-Functions-Http-Response-caching/">Azure Functions Http Response caching</a>
+          </li>
         
           <li>
             <a href="/2018/12/19/Azure-API-Management-ARM-Cheatsheet/">Azure API Management ARM Cheat sheet</a>
@@ -875,10 +851,6 @@
         
           <li>
             <a href="/2018/10/19/Building-Serverless-APIs-in-Azure/">Building Serverless API&#39;s in Azure</a>
-          </li>
-        
-          <li>
-            <a href="/2018/10/05/Azure-AD-Managed-Service-Identity/">Azure AD Managed Service Identity</a>
           </li>
         
       </ul>
