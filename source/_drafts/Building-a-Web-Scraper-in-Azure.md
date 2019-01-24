@@ -1,7 +1,15 @@
 ---
 title: Building a Web Scraper in Azure
-tags:
+date: 2019-01-18 13:38:43
+tags: 
+- Azure
+- Logic Apps
+- Functions
+- Wordpress
+- Docker
+- TypeScript
 ---
+
 Building a web scraper is pretty hard. Doing it in Azure is harder. Utilizing Serverless and PaaS services is challenging. I don't want to pay for a VM and just deploy the scraper on it because I need the solution to be scalable. Secondly I only want to pay for actual usage and not for a VM thats idle.
 
 ## The case
@@ -15,23 +23,17 @@ My initial idea was to run puppeteer inside an Azure Function, however after som
 
 For orchestrating the scraper I was thinking about using Azure Functions again. But then on a bright day I figured I would use Azure Logic Apps instead. Logic Apps are great for defining and running workflows and look like a perfect fit. They are pay per usage and are easy to develop!
 
-## The details
-So conceptua
-
 ### Puppeteer, TypeScript and NodeJs
-I wanted to brush up my TypeScript and NodeJS skills since it has been a while that I seriously developed in TypeScript. The last time I did something significant I was still using Visual Studio instead of VS Code for TypeScript development. So here's the story to get a puppeteer scraper working in NodeJs, Express and TypeScript.
+I wanted to brush up my TypeScript and NodeJS skills since it has been a while that I seriously developed in TypeScript. The last time I did something significant I was still using Visual Studio instead of VS Code for TypeScript development. So here's the story to get a puppeteer scraper working in NodeJs and TypeScript.
 
 #### Depedencies
+First of all get TypeScript tsconfig.json file there using the following command. 
 ```cmd
-npm install puppeteer --save
-npm install azure-storage --save
-
-npm install @types/puppeteer --save-dev
+tsc --init
+message TS6071: Successfully created a tsconfig.json file.
 ```
-
-`CTRL + SHIFT B` To compile
-sourcemaps enabled.
-tsconfig.json
+A sample of how your TypeScript configuration file might look like is this.
+Once important thing is to enable source maps. This allows you to debug your TypeScript code instead of debugging the transpiled JavaScript (which is a mess).
 ```json
 {
     "compilerOptions": {
@@ -43,10 +45,34 @@ tsconfig.json
     }
 }
 ```
+Once you've setup the TypeScript configuration its time to setup a NPM project.
+```cmd
+npm init
+```
+You are now ready to start developing your TypeScript application.
+You probably need some packages to interface with Puppeteer, Azure storage or whatever. Install them using npm.
+```cmd
+npm install puppeteer --save
+npm install azure-storage --save
+```
+A lot of packages got separate TypeScript definition packages. These are required to have type checking. We also require them for puppeteer. You should install them as a dev-dependency instead of a regular dependency.
+```cmd
+npm install @types/puppeteer --save-dev
+```
+#### Puppeteer
+Once you've installed your dependencies you can start developing your scraper. It's all up to you to interact with the page and retrieve the right information. A very basic example is this:
+```typescript
+import * as puppeteer from 'puppeteer';
 
-Debug
-launch.json
+const browser = await puppeteer.launch();
+const page = await browser.newPage();
+await page.goto('https://somesite.com');
 
+// Evaluate the page and interact with it.
+
+await browser.close();
+```
+One thing you probably want to do is to debug your code. In VSCode you'll have to add a debug configuration. This can be achieved by adding the following configuration in `launch.json`. Notice the "Launch program" configuration inside the debug panel of VS Code.
 ```json
 {
     "version": "0.2.0",
@@ -65,17 +91,38 @@ launch.json
     ]
 }
 ```
-
-#### Async programming with Node
-- Express json
-
-
 ### Docker and Azure
+Well you've got your scraper working on Node using TypeScript. The next thing is to host it in the Cloud. We want to containerize the application inside a docker container. Building a docker container requires a dockerfile. Here's one that works for the Puppeteer scraper. 
 
+A nice blogpost that I used to run a Docker container on Azure Container Instances [is this](https://medium.com/@bogdanbujdea/running-puppeteer-in-azure-container-instances-b24fb0a8d3e).
 
+```docker
+FROM node:8-slim
+
+# install chrome rather than relying on Puppeteer 
+RUN apt-get update && apt-get install -y wget --no-install-recommends \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-unstable --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get purge --auto-remove -y curl \
+    && rm -rf /src/*.deb
+
+# copy project files and install dependencies
+COPY . /var/app  
+WORKDIR /var/app
+RUN npm install
+#for some reason puppeteer must be installed separately, although it is included in package.json
+RUN npm i puppeteer 
+ENV AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;AccountName=tradersmatest01;AccountKey=/1hvL/O98Ni5NVqhIbL52MugGk0pVUFevP/Kw1uRXfMtGneWtIKtLkP8ZVtA/+YbFjIS0hY/u9q/8QolC5hIUw==;EndpointSuffix=core.windows.net
+ENV AZURE_SERVICEBUS_CONNECTION_STRING=Endpoint=sb://tradersmatesb01.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=5pNgC1zxPFxcmajxf9w4fZdyiKpRa3i3pqIhsaoiHno=
+
+ENTRYPOINT ["node", "scraper.js"]
+```
 
 ### Azure Logic Apps
-<img src="/images/scraper/logicapp.PNG" />
+<img src="/images/scraper/logicapp.png" />
 
 https://medium.freecodecamp.org/the-ultimate-guide-to-web-scraping-with-node-js-daa2027dcd3
 
