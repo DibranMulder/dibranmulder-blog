@@ -1,29 +1,118 @@
 ---
 title: Using Wordpress / Woocommerce in Serverless Azure
-tags: 
-- Azure
-- Wordpress
-- Woocommerce
-- Functions
+tags:
+  - Azure
+  - Wordpress
+  - Woocommerce
+  - Functions
+date: 2019-01-25 09:12:18
 ---
-
-Sometimes Wordpress isn't that bad. When for instance you're building a SEO optimized landing page for your tool and you don't want to develop everything your self. Secondly, Wordpress has thousands of plugins that can be very useful. In my case we are using Woocomerce with a subscription payment module, so that we can manage payed subscriptions for our tool and the whole user context inside Wordpress. This saves me lots of development hours and secondly the maintenance can be done by not-so-much technical people, in other words they won't call for every problem :)
+Sometimes Wordpress isn't that bad. When for instance you're building a SEO optimized landing page for a custom made tool and you don't want to develop everything your self. Secondly, Wordpress has thousands of plugins that can be very useful. In my case we are using Woocomerce with a subscription payment module, so that we can manage payed subscriptions for our tool and secondly we want to manage the user accounts inside Wordpress. This saves me lots of development hours and next to that I don't have to build any maintenance tooling since that is already inplace in Wordpress. So first line support can be done by not-so-much technical people, in other words they won't call for every problem :)
 
 ## Overview
 <img src="/images/wordpress azure.png" />
+So in essence its very easy. We just have a user with a single set of credentials which he can use in both the SEO optimized page, lets say `example.com` and in the custom made tool lets say `app.example.com`. Using the [JWT Authentication for WP REST API](https://wordpress.org/plugins/jwt-authentication-for-wp-rest-api/) plugin of Wordpress we can login any user and get a JWT bearer token as response. The JWT Authentication plugin requires a JWT Auth Secret key which we can define and share with the `Azure Functions` backend. The functions backend then checks the validity of incoming Bearer token with the shared JWT Auth Secret key, making an additional call to Wordpress unnecessary. Its blazing fast.
 
-So in essence its very easy. We just have a user with a single set of credentials which he can use in both the SEO optimized page, lets say example.com and in the tool lets say app.example.com. Using the [JWT Authentication for WP REST API](https://wordpress.org/plugins/jwt-authentication-for-wp-rest-api/) plugin of Wordpress we can login any user and get a JWT bearer token as response. The JWT Authentication plugin requires a JWT Auth Secret key which we can define and share with the functions backend. The functions backend can check the validity of incomming Bearer token with the shared JWT Auth Secret key, making a call to Wordpress unnecessary. Its blazing fast this way.
-
-But we are not there yet. We need some communication between the Functions backend and Wordpress on a application to application level. In my case I want to retrieve the available subscriptions and the active subscription for a user from Wordrpess / Woocommerce. Subscriptions are the trial, starter, business and pro packs that users can buy and those enable the user some privileges inside my Angular tool. Since its app to app communication I can't use a Bearer token and secondly the [Woocommerce API](https://docs.woocommerce.com/document/woocommerce-rest-api/) requires an OAuth 1.0 authentication. It comes down to this. The Functions backend requires a `Consumer key` and a `Consumer secret` which need to be passed into a query string. Postman has excellent OAuth 1.0 uspport to test it out.
+But we are not there yet. We need some communication between the Functions backend and Wordpress on an application to application level. In my case I want to retrieve the available subscriptions and the active subscription for a user from Wordpress / Woocommerce. Subscriptions are the trial, starter, business and pro packs that users can buy and those "packs" enable the user some privileges inside my Angular tool. Since its app to app communication I can't use a Bearer token, because thats user context bounded, and secondly the [Woocommerce API](https://docs.woocommerce.com/document/woocommerce-rest-api/) requires an OAuth 1.0 authentication. It comes down to this. The Functions backend requires a `Consumer key` and a `Consumer secret` which need to be passed into a query string. Postman has excellent OAuth 1.0 support to test it out.
 
 **Keep in mind to not add the empty parameters to the signature. Woocommerce doesn't support it.**
 
 <img src="/images/postman oauth1.png" />
 
-## Code
-Enough talking, time for code. There are 2 parts that I want to share with you. Verifying a JWT Bearer token based on a key and the OAuth 1 implementation with Woocommerce.
+So how does this look like in code. There are 2 parts that I want to share with you. Verifying a JWT Bearer token based on a JWT Auth Secret key and the OAuth 1 implementation with Woocommerce.
 
 ### Verifying a JWT Bearer token
+- Perform a Http REST call from Angular.
+```typescript
+public async authenticate(username: string, password: string) {
+    const authResponse = await this.http.post(environment.wordpressBackend + this.jwtEndpoint, { username, password }).toPromise();
+    localStorage.setItem('token', (authResponse as AuthResponse).token);
+}
+
+public async getSubscription() {
+    const res = await this.http.get(environment.tradersmateBackend + 'api/subscriptions').toPromise();
+    localStorage.setItem('subscription', res as string);
+}
+```
+- Wordpress anwers with a JWT Bearer token and some meta information.
+```json
+{
+    "token": "secrettokenwillbehere",
+    "user_email": "dibran@example.com",
+    "user_nicename": "dibranmulder",
+    "user_display_name": "Dibran Mulder"
+}
+```
+
+- Perform a `protected` Azure Function call, using an Angular interceptor to add the Bearer token.
+```typescript
+import { Injectable } from '@angular/core';
+import {
+  HttpRequest,
+  HttpHandler,
+  HttpEvent,
+  HttpInterceptor
+} from '@angular/common/http';
+import { AuthService } from './auth.service';
+import { Observable } from 'rxjs';
+
+@Injectable()
+export class TokenInterceptor implements HttpInterceptor {
+  constructor(public auth: AuthService) {
+  }
+
+  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const token = this.auth.getToken();
+    if (token) {
+      request = request.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    }
+
+    return next.handle(request);
+  }
+}
+```
+
+- A backend Azure Function checks the incoming Http Request and validates the Bearer token. 
+- Don't forget to respond with a 401 status code when the token is invalid.
+
+```csharp
+[FunctionName("SomeGet")]
+public static async Task<HttpResponseMessage> GetSome(
+    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "some")] HttpRequestMessage req,
+    [Inject] IValidateJwt validateJwt,
+    ILogger log)
+{
+    try
+    {
+        log.LogInformation("Product add called");
+
+        // Throws an UnAuthorizedException exception when the Bearer token can't be validated.
+        int userId = validateJwt.ValidateToken(req);
+
+        // Do some business logic here.
+        var results = ...
+
+        return req.CreateResponse(HttpStatusCode.OK, results);
+    }
+    catch (UnAuthorizedException e)
+    {
+        log.LogError(e.Message, e);
+        return req.CreateResponse(HttpStatusCode.Unauthorized);
+    }
+    catch (Exception e)
+    {
+        log.LogError(e.Message, e);
+        return req.CreateErrorResponse(HttpStatusCode.BadRequest, e);
+    }
+}
+```
+
+- Verify the Bearer token inside your Azure Functions.
+- Inject the JWT Auth Secret Key into the constructor.
 
 ```csharp
 public class ValidateJwt : IValidateJwt
@@ -86,6 +175,10 @@ public class ValidateJwt : IValidateJwt
 }
 ```
 
+## Calling Woocommerce with OAuth 1.0
+To interact with the Woocommerce API we need to implement the OAuth 1 flow. Its not used that much so you won't find a lot of C# examples online. Here's mine.
+
+Inject a `HttpClient`, `ConsumerKey` and `ConsumerSecret` into the Constructor. Only set the OAuth properties that are actually used, remember the Postman option with including empty parameters. It was a pain in the ass to get in working but I tested this client with Wordpress 5.0.3 and Woocommerce 3.5.4.
 
 ```csharp
 public class WordpressHttpClient : BaseHttpClient
@@ -120,13 +213,15 @@ public class WordpressHttpClient : BaseHttpClient
         {
             requestParameters.Add($"{key}={queryCollection[key]}");
         }
-
+        // We need to sign a base string.
         string otherBase = GetSignatureBaseString(HttpMethod.Get.ToString(), "https://www.example.com/wp-json/wc/v1/subscriptions", requestParameters);
         var otherSignature = GetSignature(otherBase, consumerSecret);
 
+        // Add that signature to the query parameters.
         queryCollection["oauth_signature"] = otherSignature;
         string finalQueryString = queryCollection.ToString();
 
+        // And actually perform the request.
         var finalUri = new Uri("https://www.example.com/wp-json/wc/v1/subscriptions?" + finalQueryString, UriKind.Absolute);
         HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, finalUri);
         var response = await Client.SendAsync(httpRequestMessage);
