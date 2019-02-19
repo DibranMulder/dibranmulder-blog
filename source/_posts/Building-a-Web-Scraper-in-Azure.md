@@ -7,7 +7,7 @@ tags:
   - Wordpress
   - Docker
   - TypeScript
-date: 2019-02-15
+date: 2019-02-15 15:44:40
 ---
 Building a web scraper is pretty hard. Doing it in Azure is harder. Utilizing Serverless and PaaS services is challenging. I don't want to pay for a VM and just deploy the scraper on it because I need the solution to be scalable. Secondly I only want to pay for actual usage and not for a VM thats idle.
 
