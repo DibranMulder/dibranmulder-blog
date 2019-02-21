@@ -208,7 +208,7 @@ sbService.createQueueIfNotExists(queueName, function (err) {
 });
 ```
 ### Azure Logic Apps
-<img src="/images/scraper/logicapp.png" />
+<img src="/images/scraper/logicapp.PNG" />
 Now that we can initiate a scrape session with a Service Bus queue message. We should queue some scrape commands.
 I chose to use Logic Apps for that because its on pay per use base and secondly its just a basic workflow which probably doesn't change a lot.
 Another benefit of Azure Logic Apps is the ability to analyse your 'runs' and exactly see the data flow through your Logic App.
