@@ -83,6 +83,85 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Versioning-with-Azure-PaaS" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/04/16/Versioning-with-Azure-PaaS/" class="article-date">
+  <time datetime="2019-04-16T12:45:39.000Z" itemprop="datePublished">2019-04-16</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/04/16/Versioning-with-Azure-PaaS/">Versioning with Azure PaaS and Serverless</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Working with multiple teams on a big microservices architecture can be a real struggle. What I often see is that teams are responsible for their set of microservices and struggle to isolate their services. Resulting in the following problems:</p>
+<ul>
+<li>Teams are not able to release independently.</li>
+<li>Teams are building release trains that have to be coordinated precisely.<ul>
+<li>Hence, companies are hiring people as release coordinators.</li>
+</ul>
+</li>
+<li>Reverting release trains is not possible, fix-over-fix scenario’s will occur.</li>
+<li>The applications are temporary in a state of flux while releasing a train.</li>
+</ul>
+<p><img src="images/versioning/releasetrain.png"></p>
+<p>What we ideally want is that teams stop building release trains and start releasing independently at any given time of the day. However, a lot has to be done before companies achieve that kind of development maturity. I came up with a set of principles that will guide an organization to become more maturity, and there by increasing flexibility, productivity and quality.</p>
+<h3 id="The-golden-principles"><a href="#The-golden-principles" class="headerlink" title="The golden principles."></a>The golden principles.</h3><ol>
+<li>Services must be able to run independently.<ul>
+<li>Services must be able to reconnect with other services. Any dependency can be deployed at any time. Design your service to fail.</li>
+</ul>
+</li>
+<li>Services can never introduce breaking changes.<ul>
+<li>This means services should adopt a versioning strategy.</li>
+</ul>
+</li>
+<li>There can be no direct dependencies between services, that means no direct REST interfaces anymore.</li>
+<li>Teams are able to release their service at any given time.</li>
+<li>Teams are responsible and accountable for their own services.</li>
+</ol>
+<p>Most of the principles are kind of straight forward, but keep in mind they are key for success. Sometimes simple principles are the hardest to implement, especially when you have legacy components in your microservices architecture, or maybe because it’s technically difficult to implement them. In this blog I’ll help you implementing some of the principles in Azure PaaS and Serverless services. Let’s start with a combination of versioning strategy and mitigating direct dependencies. </p>
+<h2 id="Service-bus-versioning"><a href="#Service-bus-versioning" class="headerlink" title="Service bus versioning"></a>Service bus versioning</h2><p>The most common way for microservices to communicate in an asynchronous matter on Azure is the use of Azure Service Bus. With Azure Service Bus, teams can define message channels to communicate between microservices. What a lot of development teams forget is to adopt a versioning strategy for their service bus messages.</p>
+<p>One way of versioning service bus messages is to add a <code>custom property</code> to a message. I like this better then to add a <code>version</code> property to the actual JSON or XML message because, in my opinion, a version is not part of the data you actually want to send, it’s the metadata. It’s important for the consuming party to know.</p>
+<p>So depending on the programming language you use you can add a <code>custom message property</code> to a service bus message. In C# it will look like something like this.<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Data you want to send.</span></span><br><span class="line"><span class="keyword">var</span> user = <span class="keyword">new</span></span><br><span class="line">&#123;</span><br><span class="line">    name = <span class="string">"Dibran"</span>,</span><br><span class="line">    lastName = <span class="string">"Mulder"</span>,</span><br><span class="line">    position = <span class="string">"Dev"</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// Serialize to JSON.</span></span><br><span class="line"><span class="keyword">string</span> json = JsonConvert.SerializeObject(user);</span><br><span class="line">Message message = <span class="keyword">new</span> Message(Encoding.UTF8.GetBytes(json));</span><br><span class="line"><span class="comment">// Add a custom verison property.</span></span><br><span class="line">message.UserProperties.Add(<span class="string">"Version"</span>, <span class="string">"1.0"</span>);</span><br></pre></td></tr></table></figure></p>
+<p>I like to keep the version the same as the version of your microservice. In this way we are not bogged down into a versioning hell. The version of the message is equal to the version of the service that actually created the message. A simple but effective rule. In this way you can also track by what version of a microservice a message is actually created.</p>
+<p>With <a href="https://github.com/paolosalvatori/ServiceBusExplorer" target="_blank" rel="noopener">Azure Service Bus explorer</a> you can easily check messages, create additional subscriptions, etc. I highly recommend you to use it, you can see what kind of messages are send and also inspect the custom message properties. It’s a nice tool to debug your versioning strategy.</p>
+<p>So if you send messages with a Version <code>custom message property</code> you can create for instance create 2 subscriptions for each version. With a service bus filter you can then make sure that messages with a specific version are only received by certain topics.</p>
+<p><img src="images/versioning/servicebus.png"></p>
+<p>A simple service bus filter can be:<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Version='1.0'</span><br></pre></td></tr></table></figure></p>
+<p><strong>Don’t forget to remove the default rule: 1=1.</strong> If one of the rules match a message will be accepted by a subscription.</p>
+<p>You can also choose to do the filtering and version handling in the consuming service. But I personally like it better to separate messages in subscriptions based on version numbers.</p>
+<p>Lastly, I would like to add that service bus filters can easily be created by <a href="https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-resource-manager-namespace-topic-with-rule" target="_blank" rel="noopener">ARM scripts</a>. In this way you won’t need to service bus explorer or code to manage your infrastructure. </p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"apiVersion"</span>: <span class="string">"[variables('sbVersion')]"</span>,</span><br><span class="line">    <span class="attr">"name"</span>: <span class="string">"[parameters('serviceBusRuleName')]"</span>,</span><br><span class="line">    <span class="attr">"type"</span>: <span class="string">"Rules"</span>,</span><br><span class="line">    <span class="attr">"dependsOn"</span>: [</span><br><span class="line">        <span class="string">"[parameters('serviceBusSubscriptionName')]"</span></span><br><span class="line">    ],</span><br><span class="line">    <span class="attr">"properties"</span>: &#123;</span><br><span class="line">        <span class="attr">"filterType"</span>: <span class="string">"SqlFilter"</span>,</span><br><span class="line">        <span class="attr">"sqlFilter"</span>: &#123;</span><br><span class="line">            <span class="attr">"sqlExpression"</span>: <span class="string">"StoreName = 'Store1'"</span>,</span><br><span class="line">            <span class="attr">"requiresPreprocessing"</span>: <span class="string">"false"</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"action"</span>: &#123;</span><br><span class="line">            <span class="attr">"sqlExpression"</span>: <span class="string">"set FilterTag = 'true'"</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Azure-Functions-versioning"><a href="#Azure-Functions-versioning" class="headerlink" title="Azure Functions versioning"></a>Azure Functions versioning</h2><p>With Azure functions it’s pretty easy to handle versioning. You can add a versioning scheme to the route of an <code>Http Trigger</code> like this.<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">FunctionName(<span class="meta-string">"SomeHttpFunctions"</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">async</span> Task&lt;HttpResponseMessage&gt; <span class="title">Run</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">    [HttpTrigger(</span></span></span><br><span class="line"><span class="function"><span class="params">        AuthorizationLevel.Function,</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="string">"POST"</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">        Route = <span class="string">"v1/some/endpoint"</span></span>)]</span></span><br><span class="line"><span class="function">    HttpRequestMessage req,</span></span><br><span class="line"><span class="function">    ILogger log)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// Code...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>However, routing in Azure Functions is pretty badly implemented. ASP.net core handles it way better and its therefore highly recommended to use an API gateway in front of it. As I described in <a href="https://dibranmulder.github.io/2018/10/19/Building-Serverless-APIs-in-Azure/">this blog post</a> you can use for instance Azure API Management to handle that for you. You will then get a lot of additional options such as: routing, mocking, caching, authorization, etc.<br><img src="images/serverless/Serverless.png"></p>
+<h2 id="ASP-net-core-versioning"><a href="#ASP-net-core-versioning" class="headerlink" title="ASP.net core versioning"></a>ASP.net core versioning</h2><p>Lastly I would like to point out to a very nice <a href="https://github.com/Microsoft/aspnet-api-versioning" target="_blank" rel="noopener">Github repository</a> for ASP.net core versioning. It has several examples to implement versioning correctly. Versioning is actually a 1st class citizen in ASP.net core, enabling you to adopt a solid strategy and never make breaking changes again.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://dibranmulder.github.io/2019/04/16/Versioning-with-Azure-PaaS/" data-id="cjujs5s7l000re0unsod568ks" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-PaaS-Serverless-Teams-Agile-Versioning/">Azure, PaaS, Serverless, Teams, Agile, Versioning</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Migrating-Azure-Table-Storage-to-SQL-with-Azure-Logic-Apps" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/03/22/Migrating-Azure-Table-Storage-to-SQL-with-Azure-Logic-Apps/" class="article-date">
@@ -117,7 +196,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2019/03/22/Migrating-Azure-Table-Storage-to-SQL-with-Azure-Logic-Apps/" data-id="cjtjt9otp000pjsun1pri52ka" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2019/03/22/Migrating-Azure-Table-Storage-to-SQL-with-Azure-Logic-Apps/" data-id="cjujs5s7i000pe0uneeacuwc5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Logic-Apps/">Logic Apps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/SQL-Server/">SQL Server</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Table-Storage/">Table Storage</a></li></ul>
@@ -174,7 +253,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2019/02/15/Building-a-Web-Scraper-in-Azure/" data-id="cjtjt9otl000kjsunv4mgbfft" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2019/02/15/Building-a-Web-Scraper-in-Azure/" data-id="cjujs5s7c000he0uncaioo98w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Docker/">Docker</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functions/">Functions</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Logic-Apps/">Logic Apps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TypeScript/">TypeScript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Wordpress/">Wordpress</a></li></ul>
@@ -240,7 +319,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2019/01/25/Using-Wordpress-in-Serverless-Azure/" data-id="cjtjt9otr000sjsun9u4811wo" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2019/01/25/Using-Wordpress-in-Serverless-Azure/" data-id="cjujs5s7o000we0ungda8fc74" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functions/">Functions</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Woocommerce/">Woocommerce</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Wordpress/">Wordpress</a></li></ul>
@@ -285,7 +364,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2019/01/14/Azure-Functions-Http-Response-caching/" data-id="cjtjt9ote000djsunmgzxurx2" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2019/01/14/Azure-Functions-Http-Response-caching/" data-id="cjujs5s72000be0unjnws0c53" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cache/">Cache</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functions/">Functions</a></li></ul>
@@ -344,7 +423,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/12/19/Azure-API-Management-ARM-Cheatsheet/" data-id="cjtjt9ot80008jsun700bvn7j" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/12/19/Azure-API-Management-ARM-Cheatsheet/" data-id="cjujs5s700008e0unmzcdgg56" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/API-Management/">API Management</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li></ul>
@@ -412,7 +491,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/11/13/Azure-Api-Management-overview/" data-id="cjtjt9otb000ajsund7gseri9" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/11/13/Azure-Api-Management-overview/" data-id="cjujs5s6v0006e0unb3bl1zds" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/API-Management/">API Management</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li></ul>
@@ -458,7 +537,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/25/Secrets-in-Azure-DevOps-the-bad-parts/" data-id="cjtjt9ots000tjsunlvzkq3hl" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/25/Secrets-in-Azure-DevOps-the-bad-parts/" data-id="cjujs5s7f000me0une4lcb92x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure-DevOps/">Azure DevOps</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Security/">Security</a></li></ul>
@@ -559,7 +638,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/19/Building-Serverless-APIs-in-Azure/" data-id="cjtjt9otj000ijsun4x1m249z" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/19/Building-Serverless-APIs-in-Azure/" data-id="cjujs5s79000fe0unxpf01isi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/API-Gateway/">API Gateway</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/API-management/">API management</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functions/">Functions</a></li></ul>
@@ -653,103 +732,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/10/05/Azure-AD-Managed-Service-Identity/" data-id="cjtjt9ot30005jsunw2j3yfnx" class="article-share-link">Share</a>
+      <a data-url="http://dibranmulder.github.io/2018/10/05/Azure-AD-Managed-Service-Identity/" data-id="cjujs5s6x0007e0ununi39rdo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/AD/">AD</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/MSI/">MSI</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Azure-functions-V2-with-EF-Core" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2018/08/23/Azure-functions-V2-with-EF-Core/" class="article-date">
-  <time datetime="2018-08-23T13:48:30.000Z" itemprop="datePublished">2018-08-23</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2018/08/23/Azure-functions-V2-with-EF-Core/">Azure functions V2 with EF Core</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Last week I was trying to build an API on top of Azure Functions with a backing SQL database. This sounds like a pretty easy task however that was not the case, here’s my story.</p>
-<p>Normally when I use a SQL database in a WebApp, and therefore this also applies to Functions, I use an ORM mapper. I’m pretty familiar with Entity Framework so that’s what I tried. You might think why don’t you use <a href="(https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings">Triggers and Bindings</a> to connect with your SQL database? Well SQL bindings and triggers aren’t supported yet.</p>
-<p>If you want to use Entity Framework inside Azure Functions V2 then you would have to use Entity Framework Core (EF Core) since EF core runs on .NET Core which supports .NET Standard 2.0, and .NET Standard 2.0 is the target for Azure Functions v2 projects.</p>
-<h2 id="Installation"><a href="#Installation" class="headerlink" title="Installation"></a>Installation</h2><p>Well having that said I chose to have a separate class library for my EF Core database context to live in because I have multiple function apps inside my solution, which all have to use that same database context.</p>
-<p>EF core requires some Nuget packages, at the time of writing I use the 2.1.2 versions of the understanding packages. The <code>Design</code> package is required when you want to work with migrations, if your not planning to do that then forget about that package. The <code>SqlServer</code> package has actually a pretty cool story. It is possible to use <a href="https://docs.microsoft.com/en-us/ef/core/providers/" target="_blank" rel="noopener">other underlying databases</a> such as CosmosDb, MySql or what have you. So only use that <code>SqlServer</code> package when you have a backing Sql Server database.</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Microsoft.EntityFrameworkCore</span><br><span class="line">Microsoft.EntityFrameworkCore.Design</span><br><span class="line">Microsoft.EntityFrameworkCore.SqlServer</span><br></pre></td></tr></table></figure>
-<p>Do not install the following packages.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Microsoft.EntityFrameworkCore.Tools</span><br><span class="line">Microsoft.EntityFrameworkCore.Tools.DotNet</span><br></pre></td></tr></table></figure></p>
-<p>Those packages got <a href="https://docs.microsoft.com/en-us/ef/core/miscellaneous/cli/dotnet" target="_blank" rel="noopener">deprecated after .Net core 2.1.3</a>. Before you continue, make sure you have downloaded the latest .NET Core SDK. To check your local version execute:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; dotnet --version</span><br><span class="line">2.1.400</span><br></pre></td></tr></table></figure></p>
-<h2 id="Setting-up-the-context"><a href="#Setting-up-the-context" class="headerlink" title="Setting up the context"></a>Setting up the context</h2><p>Just like with the traditional EF you have to setup a DbContext class with all the DbSets/tables and models and stuff. Generally EF core is simular to EF but there are some differences. A good site with alot of documentation is: <a href="https://www.learnentityframeworkcore.com/" target="_blank" rel="noopener">https://www.learnentityframeworkcore.com/</a>. Your context might look like this:<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">MyContext</span> : <span class="title">DbContext</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MyContext</span>(<span class="params">DbContextOptions&lt;MyContext&gt; dbContextOptions</span>) : <span class="title">base</span>(<span class="params">dbContextOptions</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">override</span> <span class="keyword">void</span> <span class="title">OnModelCreating</span>(<span class="params">ModelBuilder modelBuilder</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> DbSet&lt;Order&gt; Orders &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> DbSet&lt;Client&gt; Clients &#123; <span class="keyword">get</span>; <span class="keyword">set</span>; &#125;</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="Azure-Functions-V2-Dependency-injection"><a href="#Azure-Functions-V2-Dependency-injection" class="headerlink" title="Azure Functions V2 Dependency injection"></a>Azure Functions V2 Dependency injection</h2><p>After setting up your DbContext you probably want to use it in your Azure Functions. In order for you to effectively do that you have to setup proper dependency injection. Sadly this is not yet supported out of the box in Azure Functions V1 or V2 so you’ll have to build it your own. Don’t be sad I have found a pretty good implementation on <a href="https://github.com/BorisWilhelms/azure-function-dependency-injection" target="_blank" rel="noopener">Github</a>. Once you have a project with that code you can just reference that project from within your Azure Functions project or just create a Nuget package.</p>
-<p>All you then have to do is setup a ServiceProvider and add your dependencies simular to what you would have done in ASP.net core for instance. Note that the package <code>Microsoft.EntityFrameworkCore</code> contains a <code>AddDbContext</code> method that is build for injecting EF Core DbContexts.<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title">ServiceProviderBuilder</span> : <span class="title">IServiceProviderBuilder</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> IServiceProvider <span class="title">BuildServiceProvider</span>(<span class="params"></span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        IConfigurationRoot config = <span class="keyword">new</span> ConfigurationBuilder()</span><br><span class="line">            .SetBasePath(Environment.CurrentDirectory)</span><br><span class="line">            .AddJsonFile(<span class="string">"local.settings.json"</span>, optional: <span class="literal">true</span>, reloadOnChange: <span class="literal">true</span>)</span><br><span class="line">            .AddEnvironmentVariables()</span><br><span class="line">            .Build();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> connectionString = config.GetConnectionString(<span class="string">"SqlConnectionString"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> services = <span class="keyword">new</span> ServiceCollection();</span><br><span class="line"></span><br><span class="line">        services.AddSingleton&lt;IDemoService, DemoService&gt;();</span><br><span class="line"></span><br><span class="line">        services.AddDbContext&lt;MyContext&gt;(options =&gt; options.UseSqlServer(connectionString));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> services.BuildServiceProvider(<span class="literal">true</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>Once you’ve setup the registration then it’s very easy to inject it into your Azure Functions, take a look at this sample:<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">class</span> <span class="title">DemoFunction</span></span><br><span class="line">&#123;</span><br><span class="line">    [<span class="meta">FunctionName(nameof(DemoFunction))</span>]</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">async</span> Task&lt;IActionResult&gt; <span class="title">Run</span>(<span class="params"></span></span></span><br><span class="line"><span class="function"><span class="params">        [HttpTrigger(</span></span></span><br><span class="line"><span class="function"><span class="params">            AuthorizationLevel.Anonymous,</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="string">"get"</span>,</span></span></span><br><span class="line"><span class="function"><span class="params">            Route = <span class="string">"demo/route/&#123;id&#125;"</span></span>)]HttpRequestMessage req,</span></span><br><span class="line"><span class="function">        [Inject] MyContext myContext,</span></span><br><span class="line"><span class="function">        <span class="keyword">string</span> id,</span></span><br><span class="line"><span class="function">        ILogger log)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">var</span> order = myContext.Orders.FirstOrDefault(x =&gt; x.Id == id);</span><br><span class="line">        order.Paid = <span class="literal">true</span>;</span><br><span class="line">        <span class="keyword">await</span> mspContext.SaveChangesAsync();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="Migrations"><a href="#Migrations" class="headerlink" title="Migrations"></a>Migrations</h2><p>So we’ve got a DbContext setup and injected it into our Azure Functions, the next thing what you probably want to do is to use Migrations. EF core comes with great command line tooling, remember when we were using the Package Manager console to execute some Powershell? Finally those days are over. With the new <code>dotnet ef</code> tooling you can just do it from the command line.</p>
-<p>There is no such thing as <code>Enable-Migrations</code> anymore, you just add a Migration and you’ve enabled it. The command to add a migrations is: <code>dotnet ef migrations add &lt;name&gt;</code>.</p>
-<p>Remember that I created a Shared Class Library which targets .NET Standard? Well If you get the following error you’ve done the same as I did:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; dotnet ef migrations add InitialCreate</span><br><span class="line"></span><br><span class="line">Startup project &apos;MyProject.Shared.csproj&apos; targets framework &apos;.NETStandard&apos;. There is no runtime associated with this framework, and projects targeting it cannot be executed directly. To use the Entity Framework Core .NET Command-line Tools with this project, add an executable project targeting .NET Core or .NET Framework that references this project, and set it as the startup project using --startup-project; or, update this project to cross-target .NET Core or .NET Framework.</span><br></pre></td></tr></table></figure></p>
-<p>An easy work around is to enable multiple TargetFrameworks, note that its plural, add an ‘s’ after TargetFramework. If you add a netcoreapp target framework then your Class Library can execute on its own, even without a <code>static void main()</code> or something like that.<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Project</span> <span class="attr">Sdk</span>=<span class="string">"Microsoft.NET.Sdk"</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">PropertyGroup</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">TargetFrameworks</span>&gt;</span>netcoreapp2.0.7;netstandard2.0<span class="tag">&lt;/<span class="name">TargetFrameworks</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">PropertyGroup</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">Project</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
-<p>If you execute the <code>dotnet ef migrations add &lt;name&gt;</code> again then you will probably get the following error.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; dotnet ef migrations add InitialCreate</span><br><span class="line"></span><br><span class="line">Unable to create an object of type &apos;MyContext&apos;. Add an implementation of &apos;IDesignTimeDbContextFactory&lt;MyContext&gt;&apos; to the project, or see https://go.microsoft.com/fwlink/?linkid=851728 for additional patterns supported at design time.</span><br></pre></td></tr></table></figure></p>
-<p>This error states that you do not have setup a <code>DbContextOptions</code> object for your <code>DbContext</code> class. In other words during command line execution it doesn’t know where to execute or check the migrations on. In order for you to workaround this you’ll have to implement a <code>IDesignTimeDbContextFactory&lt;MyContext&gt;</code>. You’ll not have to reference it anywhere, the tooling will just check for the existence and initiate the class. I chose to create an <code>appsettings.json</code> file and inject a connectionString inside that file.<br><figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory&lt;MyContext&gt;</span><br><span class="line">&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> MyContext <span class="title">CreateDbContext</span>(<span class="params"><span class="keyword">string</span>[] args</span>)</span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        IConfigurationRoot configuration = <span class="keyword">new</span> ConfigurationBuilder()</span><br><span class="line">            .SetBasePath(Directory.GetCurrentDirectory())</span><br><span class="line">            .AddJsonFile(<span class="string">"appsettings.json"</span>)</span><br><span class="line">            .Build();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">var</span> builder = <span class="keyword">new</span> DbContextOptionsBuilder&lt;MyContext&gt;();</span><br><span class="line">        <span class="keyword">var</span> connectionString = configuration.GetConnectionString(<span class="string">"SqlConnectionString"</span>);</span><br><span class="line">        builder.UseSqlServer(connectionString);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> MyContext(builder.Options);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"ConnectionStrings"</span>: &#123;</span><br><span class="line">    <span class="attr">"SqlConnectionString"</span>: <span class="string">"Server=tcp:whatever.database.windows.net,1433;Initial Catalog=whatever;Persist Security Info=False;User ID=whateveradmin;Password=secret;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>If you try the command again, it should work.<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; dotnet ef migrations add InitialCreate</span><br><span class="line">Done. To undo this action, use 'ef migrations remove'</span><br></pre></td></tr></table></figure></p>
-<h2 id="CI-CD"><a href="#CI-CD" class="headerlink" title="CI / CD"></a>CI / CD</h2><p>Last but not least you probably want to generate migrations and execute them from your CI/CD environment. This way you’ll get a fully managed way of migrating/managing your database for all different environments.</p>
-<h3 id="VSTS"><a href="#VSTS" class="headerlink" title="VSTS"></a>VSTS</h3><p><img src="/images/efcore/vstsbuild.png"><br>In VSTS you just setup a build with the following steps:</p>
-<ul>
-<li>dotnet restore</li>
-<li>dotnet build</li>
-<li>dotnet publish<ul>
-<li>Name the projects of your function apps.</li>
-</ul>
-</li>
-<li>dotnet custom<ul>
-<li>Add <code>ef</code> as custom command</li>
-<li>Add the arguments below. Set the project and the startup-project to your Class Library.</li>
-</ul>
-</li>
-<li>Stage the ARM template</li>
-<li>Publish the artifacts<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">migrations script -i --project $(Build.SourcesDirectory)\MyProject.Shared\MyProject.Shared.csproj --startup-project $(Build.SourcesDirectory)\MyProject.Shared.csproj\MyProject.Shared.csproj.csproj -o $(build.artifactstagingdirectory)\Migrations\scripts.sql</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>Its important that you add the <code>-i</code> argument. This argument will generate the migrations script in such a way that it checks if the migration is already executed on the database. This prevents the pipeline from applying the same migrations twice. Notice that the migrations script is outputed to the artifacts directory which is published at the last step of the build.</p>
-<p><img src="/images/efcore/vstsrelease.png"><br>In the release part of the CI/CD pipeline you’ll just have to the following:</p>
-<ul>
-<li>Execute the ARM script</li>
-<li>I use ARM script outputs to get the SQL Server name and Database name.</li>
-<li>Stop your Azure Functions</li>
-<li>Redeploy them</li>
-<li>Execute the migrations script against the database</li>
-<li>Restart the Azure Functions.</li>
-</ul>
-<p>Well that’s it, you’ve got Azure Functions V2 running Entity Framework Core in Azure! Thanks for reading and happy coding.</p>
-<h2 id="Some-tips-and-tricks"><a href="#Some-tips-and-tricks" class="headerlink" title="Some tips and tricks"></a>Some tips and tricks</h2><p>Just some tips and tricks.</p>
-<p>Don’t worry about this warning. Since EF Core tools are build into the .NET Core tooling you might have mismatches with your EF Core packages.<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">The EF Core tools version &apos;2.1.0-rtm-30799&apos; is older than that of the runtime &apos;2.1.1-rtm-30846&apos;. Update the tools for the latest features and bug fixes.</span><br></pre></td></tr></table></figure></p>
-<p>It can also occur that you only get this warning in VSTS. That might be the result of different .NET Core SDK’s on your client pc and VSTS. Check <a href="https://github.com/Microsoft/vsts-image-generation/blob/master/images/win/Vs2017-Server2016-Readme.md#net-core" target="_blank" rel="noopener">this page</a> out to see what version of <code>dotnet</code> is running in VSTS.</p>
-<p>Adding the <code>-i</code> argument prevents migrations from being executed twice.<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; dotnet ef migrations script -i</span><br></pre></td></tr></table></figure></p>
-<p>It adds the following check to the generated SQL:<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">IF NOT EXISTS(<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> [__EFMigrationsHistory] <span class="keyword">WHERE</span> [MigrationId] = N<span class="string">'20180823120412_InitialCreate'</span>)</span><br><span class="line"><span class="keyword">BEGIN</span></span><br><span class="line">    <span class="comment">-- Generated migrations code here</span></span><br><span class="line"><span class="keyword">END</span></span><br></pre></td></tr></table></figure></p>
-<p>To remove all migrations and start over just simply execute this.<br>It can be handy at the initial development.<br><figure class="highlight cmd"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt; dotnet ef database update <span class="number">0</span></span><br><span class="line">&gt; dotnet ef migrations remove</span><br></pre></td></tr></table></figure></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://dibranmulder.github.io/2018/08/23/Azure-functions-V2-with-EF-Core/" data-id="cjtjt9otg000ejsun8db0ttrl" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Azure/">Azure</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Dependency-Injection/">Dependency Injection</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/EF-Core/">EF Core</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Entity-Framework-Core/">Entity Framework Core</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Functions-V2/">Functions V2</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Migrations/">Migrations</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/VSTS/">VSTS</a></li></ul>
 
     </footer>
   </div>
@@ -776,7 +762,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AD/">AD</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Gateway/">API Gateway</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Management/">API Management</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-management/">API management</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Availability-Zone/">Availability Zone</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure/">Azure</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-DevOps/">Azure DevOps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cache/">Cache</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Caesar/">Caesar</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CosmosDb/">CosmosDb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Dependency-Injection/">Dependency Injection</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EF-Core/">EF Core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Entity-Framework-Core/">Entity Framework Core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Functions/">Functions</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Functions-V2/">Functions V2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logic-Apps/">Logic Apps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MSI/">MSI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Migrations/">Migrations</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Resilient/">Resilient</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL-Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Security/">Security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Service-Health/">Service Health</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Table-Storage/">Table Storage</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TypeScript/">TypeScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSTS/">VSTS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Woocommerce/">Woocommerce</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Wordpress/">Wordpress</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/AD/">AD</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Gateway/">API Gateway</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-Management/">API Management</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/API-management/">API management</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Availability-Zone/">Availability Zone</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure/">Azure</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-DevOps/">Azure DevOps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Azure-PaaS-Serverless-Teams-Agile-Versioning/">Azure, PaaS, Serverless, Teams, Agile, Versioning</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cache/">Cache</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Caesar/">Caesar</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/CosmosDb/">CosmosDb</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Dependency-Injection/">Dependency Injection</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Docker/">Docker</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/EF-Core/">EF Core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Entity-Framework-Core/">Entity Framework Core</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Functions/">Functions</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Functions-V2/">Functions V2</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Logic-Apps/">Logic Apps</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MSI/">MSI</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Migrations/">Migrations</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Resilient/">Resilient</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/SQL-Server/">SQL Server</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Security/">Security</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Service-Health/">Service Health</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Table-Storage/">Table Storage</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TypeScript/">TypeScript</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/VSTS/">VSTS</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Woocommerce/">Woocommerce</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Wordpress/">Wordpress</a></li></ul>
     </div>
   </div>
 
@@ -786,7 +772,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/AD/" style="font-size: 10px;">AD</a> <a href="/tags/API-Gateway/" style="font-size: 10px;">API Gateway</a> <a href="/tags/API-Management/" style="font-size: 13.33px;">API Management</a> <a href="/tags/API-management/" style="font-size: 10px;">API management</a> <a href="/tags/Availability-Zone/" style="font-size: 10px;">Availability Zone</a> <a href="/tags/Azure/" style="font-size: 20px;">Azure</a> <a href="/tags/Azure-DevOps/" style="font-size: 10px;">Azure DevOps</a> <a href="/tags/Cache/" style="font-size: 10px;">Cache</a> <a href="/tags/Caesar/" style="font-size: 10px;">Caesar</a> <a href="/tags/CosmosDb/" style="font-size: 13.33px;">CosmosDb</a> <a href="/tags/Dependency-Injection/" style="font-size: 10px;">Dependency Injection</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/EF-Core/" style="font-size: 10px;">EF Core</a> <a href="/tags/Entity-Framework-Core/" style="font-size: 10px;">Entity Framework Core</a> <a href="/tags/Functions/" style="font-size: 16.67px;">Functions</a> <a href="/tags/Functions-V2/" style="font-size: 10px;">Functions V2</a> <a href="/tags/Logic-Apps/" style="font-size: 13.33px;">Logic Apps</a> <a href="/tags/MSI/" style="font-size: 10px;">MSI</a> <a href="/tags/Migrations/" style="font-size: 10px;">Migrations</a> <a href="/tags/Resilient/" style="font-size: 10px;">Resilient</a> <a href="/tags/SQL-Server/" style="font-size: 10px;">SQL Server</a> <a href="/tags/Security/" style="font-size: 10px;">Security</a> <a href="/tags/Service-Health/" style="font-size: 10px;">Service Health</a> <a href="/tags/Table-Storage/" style="font-size: 10px;">Table Storage</a> <a href="/tags/TypeScript/" style="font-size: 10px;">TypeScript</a> <a href="/tags/VSTS/" style="font-size: 10px;">VSTS</a> <a href="/tags/Woocommerce/" style="font-size: 10px;">Woocommerce</a> <a href="/tags/Wordpress/" style="font-size: 13.33px;">Wordpress</a>
+      <a href="/tags/AD/" style="font-size: 10px;">AD</a> <a href="/tags/API-Gateway/" style="font-size: 10px;">API Gateway</a> <a href="/tags/API-Management/" style="font-size: 13.33px;">API Management</a> <a href="/tags/API-management/" style="font-size: 10px;">API management</a> <a href="/tags/Availability-Zone/" style="font-size: 10px;">Availability Zone</a> <a href="/tags/Azure/" style="font-size: 20px;">Azure</a> <a href="/tags/Azure-DevOps/" style="font-size: 10px;">Azure DevOps</a> <a href="/tags/Azure-PaaS-Serverless-Teams-Agile-Versioning/" style="font-size: 10px;">Azure, PaaS, Serverless, Teams, Agile, Versioning</a> <a href="/tags/Cache/" style="font-size: 10px;">Cache</a> <a href="/tags/Caesar/" style="font-size: 10px;">Caesar</a> <a href="/tags/CosmosDb/" style="font-size: 13.33px;">CosmosDb</a> <a href="/tags/Dependency-Injection/" style="font-size: 10px;">Dependency Injection</a> <a href="/tags/Docker/" style="font-size: 10px;">Docker</a> <a href="/tags/EF-Core/" style="font-size: 10px;">EF Core</a> <a href="/tags/Entity-Framework-Core/" style="font-size: 10px;">Entity Framework Core</a> <a href="/tags/Functions/" style="font-size: 16.67px;">Functions</a> <a href="/tags/Functions-V2/" style="font-size: 10px;">Functions V2</a> <a href="/tags/Logic-Apps/" style="font-size: 13.33px;">Logic Apps</a> <a href="/tags/MSI/" style="font-size: 10px;">MSI</a> <a href="/tags/Migrations/" style="font-size: 10px;">Migrations</a> <a href="/tags/Resilient/" style="font-size: 10px;">Resilient</a> <a href="/tags/SQL-Server/" style="font-size: 10px;">SQL Server</a> <a href="/tags/Security/" style="font-size: 10px;">Security</a> <a href="/tags/Service-Health/" style="font-size: 10px;">Service Health</a> <a href="/tags/Table-Storage/" style="font-size: 10px;">Table Storage</a> <a href="/tags/TypeScript/" style="font-size: 10px;">TypeScript</a> <a href="/tags/VSTS/" style="font-size: 10px;">VSTS</a> <a href="/tags/Woocommerce/" style="font-size: 10px;">Woocommerce</a> <a href="/tags/Wordpress/" style="font-size: 13.33px;">Wordpress</a>
     </div>
   </div>
 
@@ -795,7 +781,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">maart 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">februari 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">januari 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">december 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">november 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">oktober 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">augustus 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">juli 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">juni 2018</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">april 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/03/">maart 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">februari 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">januari 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">december 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">november 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">oktober 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">augustus 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">juli 2018</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">juni 2018</a></li></ul>
     </div>
   </div>
 
@@ -806,6 +792,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/04/16/Versioning-with-Azure-PaaS/">Versioning with Azure PaaS and Serverless</a>
+          </li>
         
           <li>
             <a href="/2019/03/22/Migrating-Azure-Table-Storage-to-SQL-with-Azure-Logic-Apps/">Migrating Azure Table Storage to SQL with Azure Logic Apps</a>
@@ -821,10 +811,6 @@
         
           <li>
             <a href="/2019/01/14/Azure-Functions-Http-Response-caching/">Azure Functions Http Response caching</a>
-          </li>
-        
-          <li>
-            <a href="/2018/12/19/Azure-API-Management-ARM-Cheatsheet/">Azure API Management ARM Cheat sheet</a>
           </li>
         
       </ul>

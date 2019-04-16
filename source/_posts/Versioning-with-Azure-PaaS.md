@@ -52,6 +52,7 @@ With [Azure Service Bus explorer](https://github.com/paolosalvatori/ServiceBusEx
 So if you send messages with a Version `custom message property` you can create for instance create 2 subscriptions for each version. With a service bus filter you can then make sure that messages with a specific version are only received by certain topics.
 
 <img src='images/versioning/servicebus.png' />
+<img src='images/versioning/sendmessage.png' />
 
 A simple service bus filter can be:
 ```sql
