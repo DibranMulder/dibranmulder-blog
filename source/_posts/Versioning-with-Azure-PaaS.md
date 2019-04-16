@@ -10,7 +10,7 @@ Working with multiple teams on a big microservices architecture can be a real st
 * Reverting release trains is not possible, fix-over-fix scenario's will occur.
 * The applications are temporary in a state of flux while releasing a train.
 
-<img src='images/versioning/releasetrain.png' />
+<img src='/images/versioning/releasetrain.png' />
 
 What we ideally want is that teams stop building release trains and start releasing independently at any given time of the day. However, a lot has to be done before companies achieve that kind of development maturity. I came up with a set of principles that will guide an organization to become more maturity, and there by increasing flexibility, productivity and quality.
 
@@ -51,8 +51,8 @@ With [Azure Service Bus explorer](https://github.com/paolosalvatori/ServiceBusEx
 
 So if you send messages with a Version `custom message property` you can create for instance create 2 subscriptions for each version. With a service bus filter you can then make sure that messages with a specific version are only received by certain topics.
 
-<img src='images/versioning/servicebus.png' />
-<img src='images/versioning/sendmessage.png' />
+<img src='/images/versioning/servicebus.png' />
+<img src='/images/versioning/sendmessage.png' />
 
 A simple service bus filter can be:
 ```sql
