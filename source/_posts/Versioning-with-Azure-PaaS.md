@@ -100,7 +100,7 @@ public static async Task<HttpResponseMessage> Run(
 }
 ```
 However, routing in Azure Functions is pretty badly implemented. ASP.net core handles it way better and its therefore highly recommended to use an API gateway in front of it. As I described in [this blog post](https://dibranmulder.github.io/2018/10/19/Building-Serverless-APIs-in-Azure/) you can use for instance Azure API Management to handle that for you. You will then get a lot of additional options such as: routing, mocking, caching, authorization, etc.
-<img src='images/serverless/Serverless.png' />
+<img src='/images/serverless/Serverless.png' />
 
 ## ASP.net core versioning
 Lastly I would like to point out to a very nice [Github repository](https://github.com/Microsoft/aspnet-api-versioning) for ASP.net core versioning. It has several examples to implement versioning correctly. Versioning is actually a 1st class citizen in ASP.net core, enabling you to adopt a solid strategy and never make breaking changes again.
