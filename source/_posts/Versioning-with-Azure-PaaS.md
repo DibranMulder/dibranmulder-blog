@@ -75,7 +75,7 @@ Lastly, I would like to add that service bus filters can easily be created by [A
     "properties": {
         "filterType": "SqlFilter",
         "sqlFilter": {
-            "sqlExpression": "StoreName = 'Store1'",
+            "sqlExpression": "Version = '1.0'",
             "requiresPreprocessing": "false"
         },
         "action": {
@@ -87,12 +87,12 @@ Lastly, I would like to add that service bus filters can easily be created by [A
 ## Azure Functions versioning
 With Azure functions it's pretty easy to handle versioning. You can add a versioning scheme to the route of an `Http Trigger` like this.
 ```csharp
-[FunctionName("SomeHttpFunctions")]
+[FunctionName("SomeHttpFunction")]
 public static async Task<HttpResponseMessage> Run(
     [HttpTrigger(
         AuthorizationLevel.Function,
         "POST",
-        Route = "v1/some/endpoint")]
+        Route = "api/v1/entity")]
     HttpRequestMessage req,
     ILogger log)
 {
