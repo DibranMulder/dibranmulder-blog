@@ -1,5 +1,5 @@
 ---
-title: Learn CosmosDb in 20 pictures
+title: Learn CosmosDb in 25 pictures
 date: 2019-06-18 14:33:56
 tags:
 - Azure
@@ -7,6 +7,18 @@ tags:
 ---
 The Azure CosmosDb team published a series of cartoons on their [twitter account](https://twitter.com/AzureCosmosDB) to explain alot of CosmosDb features. I collected them and thought it would be nice to reshare them with you. Happy learning!
 
+## The 5 new ones
+<img src="/images/cosmos/ttl.png" />
+<hr>
+<img src="/images/cosmos/unique key.png" />
+<hr>
+<img src="/images/cosmos/perf 1.png" />
+<hr>
+<img src="/images/cosmos/perf 2.png" />
+<hr>
+<img src="/images/cosmos/perf 3.png" />
+
+## The 20 original ones
 <img src="/images/cosmos/resource model.png" />
 <hr>
 <img src="/images/cosmos/regional presence.png" />
