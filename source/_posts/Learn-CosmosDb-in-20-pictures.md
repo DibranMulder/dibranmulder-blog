@@ -1,5 +1,5 @@
 ---
-title: Learn CosmosDb in 25 pictures
+title: Learn CosmosDb in 27 pictures
 date: 2019-06-18 14:33:56
 tags:
 - Azure
@@ -7,7 +7,11 @@ tags:
 ---
 The Azure CosmosDb team published a series of cartoons on their [twitter account](https://twitter.com/AzureCosmosDB) to explain alot of CosmosDb features. I collected them and thought it would be nice to reshare them with you. Happy learning!
 
-## The 5 new ones
+## The 7 new ones
+<img src="/images/cosmos/costs 1.png" />
+<hr>
+<img src="/images/cosmos/costs 2.png" />
+<hr>
 <img src="/images/cosmos/ttl.png" />
 <hr>
 <img src="/images/cosmos/unique key.png" />
