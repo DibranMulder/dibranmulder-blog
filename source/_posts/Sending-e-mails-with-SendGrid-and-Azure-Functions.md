@@ -3,8 +3,9 @@ title: Sending e-mails with SendGrid and Azure Functions
 tags:
   - Azure Functions
   - SendGrid
-date: 2019-07-05 12:44:16
+date: 2019-08-23 12:44:16
 ---
+
 
 In this blogpost I'll show how to send e-mails with SendGrid and Azure Functions.
 The goal is to send an email like this, stating in Dutch that some products that people are selling are hijacked.
