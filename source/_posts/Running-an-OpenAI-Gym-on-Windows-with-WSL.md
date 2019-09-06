@@ -134,11 +134,11 @@ for i in range(num_episodes):
 env.close()
 
 ```
-<img src="images/wsl/pacman.png" />
+<img src="/images/wsl/pacman.png" />
 
 ## VS Code
 Working with Nano is a pain in the ass. I prefer VS Code as a development environment. Luckily VS Code comes with a great extension for WSL development called [Remote - WSL](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl). You can simply install it and connect with a WSL environment.
 
-<img src="images/wsl/wsl connected.png" />
+<img src="/images/wsl/wsl connected.png" />
 
 Thats about it! Happy coding.
