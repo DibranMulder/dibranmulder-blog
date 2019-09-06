@@ -9,16 +9,18 @@ tags:
 ---
 Recently, I have been playing with Artifical Intelligence a little bit. I want to take on this subject a little bit more serious and I was looking for a playground to combine gaming with AI, to make it fun. I came accross the [OpenAI Gym](https://github.com/openai/gym) which has a built in Atari simulator! How cool is it to write an AI model to play Pacman. 
 
-I'm a Windows power user, always have been. I have tried Ubuntu and MacOS but those don't cut it for me. However the Atari simulator is only supported for Linux, so I have to use Linux. Recently I have heard about WSL (Windows Subsystem for Linux) which is a lite version of Ubuntu running on Windows.  I thought I'd use that, but sadly it doesn't have an UI, and I need that to see Pacman crushing those ghosts. But I managed to fix that.
+I'm a Windows power user, always have been. I have tried Ubuntu and MacOS but those don't cut it for me. However the Atari simulator is only supported for Linux, so I have to use Linux. Recently I have heard about WSL (Windows Subsystem for Linux) which is a lite weight way of running Ubuntu on Windows. I thought I'd use that, but sadly it doesn't bring an UI, and I need one to see Pacman crushing those ghosts. But I managed to fix that.
 
-In this blogpost I'll show you how to run an OpenAI Gym Atari Emulator on WSL with an UI. Secondly I'll show you how to run Python code against it. This blogpost doesn't cut the AI part because I still have to learn it :)
+In this blogpost I'll show you how to run an OpenAI Gym Atari Emulator on WSL with an UI. Secondly I'll show you how to run Python code against it. This blogpost doesn't include the AI part because I still have to learn it :)
 
-## Install WSL for Windows 
-First of all we have to install WSL. I took the `Ubuntu 18.04 LTS` version. You can easily install it via the [Microsoft Store](https://www.microsoft.com/en-us/p/ubuntu-1804-lts/9n9tngvndl3q?activetab=pivot:overviewtab). Don't forget to execute the following Powershell in Admin mode to enable WSL in Windows.
+## Install Ubuntu on WSL for Windows
+First of all we have to enable WSL in Windows, you can simply do that by executing the following Powershell code in Admin mode.
 
 ```Powershell
 Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 ```
+
+After that you can install a Linux distro. I took the `Ubuntu 18.04 LTS` version. You can easily install it via the [Microsoft Store](https://www.microsoft.com/en-us/p/ubuntu-1804-lts/9n9tngvndl3q?activetab=pivot:overviewtab). Don't forget to execute the following Powershell in Admin mode to enable WSL in Windows.
 
 Once Ubuntu is installed it will prompt you for an admin username and password. After that make sure to update and upgrade Ubuntu, using the following bash command. 
 
@@ -33,7 +35,7 @@ Now that we've got WSL running on Windows its time to get the UI working. WSL do
 
 First of all we need a X11 Server for Windows. I used the [Xming X Server for Windows](https://sourceforge.net/projects/xming/). Download it and install it on your host machine.
 
-After that we have to link the WSL instance to the remote display server,running on Windows. Execute the following code inside your WSL terminal.
+After that we have to link the WSL instance to the remote display server, running on Windows. Execute the following code inside your WSL terminal.
 
 ```bash
 echo "export DISPLAY=localhost:0.0" >> ~/.bashrc
