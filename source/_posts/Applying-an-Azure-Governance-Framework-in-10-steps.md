@@ -135,4 +135,4 @@ Basically answers: What is the expected uptime? Is this resource business critic
 
 ## References
 A big inspiration for this blog comes from this article.
-https://novacontext.com/azure-strategy-and-implementation/#conclusion
+https://novacontext.com/azure-strategy-and-implementation
