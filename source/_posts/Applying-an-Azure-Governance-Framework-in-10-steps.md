@@ -3,20 +3,21 @@ title: Applying an Azure Governance Framework in 10 steps
 date: 2019-12-06 16:17:55
 tags:
 ---
-
-<img src="/images/governance/framework.png" />
+<figure><img src="/images/governance/framework.png" /><figcaption style="font-style: italic; text-align: center;">Caesar Azure Governance Framework.</figcaption></figure>
 
 Every year RightScale, now Flexera, holds a survey to measure the current cloud challenges. This year just like in previous years Mananing cloud spend and applying governance were the top challenges companies face. This blogpost is to manage the governance challange. It provides a simple but yet effective framework to apply cloud governance into your business.
 
 # 1. Get a grip on your subscriptions
-<img style="width: 400px;" src="/images/governance/subscriptions.png" />
+<figure><img style="width: 400px;" src="/images/governance/subscriptions.png" /><figcaption style="font-style: italic; text-align: center;">Azure account types</figcaption></figure>
+
 It all starts with your Azure subscriptions. When creating an Azure tetant there are 4 ways of creating it. 
 If you choose to create one via Microsoft then you have 2 options, either the Pay-As-You-Go account type or an Enterprise Agreement.
 If your organisation it not a small or medium business then you will probably need an Enterprise Argreement. It offers you a way to easily create multiple subscriptions and create them accordingly to for instance your business value domains.
 
 The alternative is to choose either a direct on indirect Microsoft partner. These are so called Cloud Solution Providers. The CSP's will get a kick back fee for your Azure consumption making it a interesting option for them to help you with your Azure needs. In return Microsoft expects that CSP's will give a first line of support to their customers.
 
-<img style="width: 400px;" src="/images/governance/dta-prod.png" />
+<figure><img style="width: 400px;" src="/images/governance/dta-prod.png" /><figcaption style="font-style: italic; text-align: center;">Azure subscriptions; dev, test, acceptance & production.</figcaption></figure>
+
 It's also wise to always create a separate production subscription or dependant on the size of your value domains also separate dev, test and acceptance subscriptions. For security and governance reasons later described in the Role based Access Control section, it is wise to separate production from dta. 
 
 ## To conclude
@@ -59,7 +60,7 @@ Applying the same naming conventions throughout the whole organisation can be ve
 ## Some generic tips for composing a naming convention
 1. Start with the environment property because its often the only parameterized property. This reduces the need for string concatenation within IaC code.
 2. Use 3 or 4 letter abbreviations consistently throught all properties.
-3. Use the resource abbreviations [proposed by Microsoft](- https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/naming-and-tagging#recommended-resource-type-prefixes).
+3. Use the resource abbreviations [proposed by Microsoft](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/naming-and-tagging#recommended-resource-type-prefixes).
 4. Add a suffix because it may occur that a resource name is locked for a significant amount of time when its deleted.
  - This happened to me once when I tried to recreate an Azure Service Bus. The name was locked for 2 days.
 5. Use all lower cases characters, [there are some restrictions](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming).
@@ -68,17 +69,42 @@ Applying the same naming conventions throughout the whole organisation can be ve
  - Some resource names, such as PaaS services with public endpoints or virtual machine DNS labels, have global scopes, which means that they must be unique across the entire Azure platform.
 
 # 3. Take precautions with Blueprints / Policies
-<figure>
-  <img src="/images/governance/azure-gov.png" style="width:600px">
-  <figcaption>Azure Governance Architecture. https://www.microsoft.com/en-us/us-partner-blog/2019/07/24/azure-governance/</figcaption>
-</figure>
+<figure><img src="/images/governance/azure-gov.png" style="width:600px"><figcaption style="font-style: italic; text-align: center;">[Azure Governance Architecture](https://www.microsoft.com/en-us/us-partner-blog/2019/07/24/azure-governance)</figcaption></figure>
 
-https://www.microsoft.com/en-us/us-partner-blog/2019/07/24/azure-governance/
+There are several ways to create Azure resources, namely via the Azure portal, ARM templates, Azure CLI or via Powershell. In all cases its very important that Azure resources are created in a controlled manner. We often see organizations struggling with compliance and governance, especially when an organization wants to get back in control after a period of experimenting and starting.
+
+Its very important to adopt the major DevOps practices to truely get back in control. Some practices that really relate to governance are the following.
+1. Version control
+2. Continous integration
+3. Continous delivery
+4. Infrastructure as Code
+5. Monitoring and logging
+
+These practices all point to a set of underlying principles, namely: traceability and accountability and the least access principle.
+## Traceability and accountability
+**Version control** and CI/CD enables organizations to get in control of the artifcats that are being deployed in their cloud environment. With an DevOps platform like Azure Devops its very easy to setup source code repositories (with for instance Git) to take care of an organizations source code. Version control helps organizations to get a collaborately work on code in a controlled way. 
+
+With **continous integration** organizations can continously check the status of their code. Does the latest change negatively or positively impacted the quality of the code? With static code analysis and automated testing with for instance unit testing the qaulity of the code can be made deterministic. Did the unit test code coverage increase or decrease with the latest change? And did we have more or less compiler warnings?
+
+With **continuos delivery** organizations can continously deploy their artifacts to a testing environment. Getting the feedback loop as quick as possible boosts the quality of an Agile development cycle. It enables testers to test a developers work earlier and also it enables product owners and stakeholders to provide feedback earlier. Lastly setting up a delivery pipeline to for instance Azure reduces the amount of deployment mistakes. Once the delivery pipeline is setup it should also work for production.
+
+With **infrastructure as code** organizations can make sure that resources created in Azure are consistent throughout environments. Secondly we delegate creating and updating resources to automation accounts. In Azure those accounts are named service principals and operate from Azure Devops and mutate Azure. 
+
+ all cycles in the development 
+
+desired state, validated, repetative
+
+With **monitoring and logging** organizations d b 
+Don't put a thermometer into production, don't peek around in production. GPDR. 
+
+## Least access princple
+GPDR.
+PIM
+https://docs.microsoft.com/en-us/azure/devops/learn/what-is-devops
+https://www.microsoft.com/en-us/us-partner-blog/2019/07/24/azure-governance
 
 # 4. Add security with Role based Access Control (RBAC)
-<img style="width: 400px;" src="/images/governance/rbac-overview.png" />
-
-https://docs.microsoft.com/en-us/azure/role-based-access-control/overview
+<figure><img src="/images/governance/rbac-overview.png" style="width:400px"><figcaption style="font-style: italic; text-align: center;">[Azure - Role Bassed Access Control](https://docs.microsoft.com/en-us/azure/role-based-access-control/overview)</figcaption></figure>
 
 Users
 Groups
@@ -95,13 +121,21 @@ Least access principle.
 A recommended security practice in which every user is provided with only the minimum privileges needed to accomplish the tasks they are authorized to perform. This practice minimizes the number of Global Administrators and instead uses specific administrator roles for certain scenarios.
 https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-configure
 
-# 5. Monitor with security center
+# 5. Bring logic in the universe with Azure Resource Groups
+<figure><img src="/images/governance/resource-group-example.png" style="width:600px"><figcaption style="font-style: italic; text-align: center;">Azure Resource Groups example</figcaption></figure>
+Setting up resource groups in Azure sounds like a next-next-finish exercise, however in practise it can be very difficult to come up with a clear and understandable setup of your resource groups. A rule of thumb that you can use is that **a resource group should always be a single unit of deployment**. In the example above I have tried to come up with a clear example.
 
-# 6. Automate your work with Azure Automation.
+Lets say you are building a portal. Its build with React and an ASP.net core backend. Ideally you want to be able to deploy the backend API separately from your front-end single page application. Its then fundamental to split those resources up into 2 separate resource groups. In the naming scheme we have used the following pattern: environment-company-production-resource-region-suffix, where the company, Cloud Republic is abbreviated to: ```clr``` and the product portal to: ```por``` and the financial module to: ```fin```. 
 
-# 7. Bring logic in the universe with Azure Resource Groups.
+With this resource groups are a logical set up Azure resources that are deployed as a single unit. **Secondly resource groups are linked with their names to collectively form a product**. This helps for instance Ops-engineers to determine to importance of the Azure resources and take the necessary steps.
 
-# 8. Tags you resources to get insights
+# 6. Monitor with security center
+
+
+# 7. Automate your work with Azure Automation
+
+
+# 8. Tags your resources to get insights
 Tagging resources can help to identify important properties of Azure resources. 
 
 Most of the time I split them up into 3 categories, namely accountability, costs and reliability.
@@ -128,8 +162,34 @@ Basically answers: What is the expected uptime? Is this resource business critic
 - Service class
 
 # 9. Lock your viable resources
+A quick win for organizations who start to implement the governance framework is to enable locking. With locking you can prevent developers or ops-engineers to accidentely remove or edit Azure resources. This can be very helpfull in securing critical production workloads. Within Azure there are 2 types of locks, namely: CanNotDelete and ReadOnly.
 
-## Further reading
+## CanNotDelete
+CanNotDelete means that an authorized user is still able to read and modify the resource. However the user is not able to delete the resource without explicitly removing the lock first.
+
+## ReadOnly
+ReadOnly means that an authorized user is able to read the resource but is not able to change or delete the resource. Effectively it restricts all users even admins to the Reader role.
+
+## To conclude
+In my opinion resource locking is not something organizations have to implement in an ideal situation. When production workloads are separated in production subscriptions, and when RBAC is implement correctly then the need for Locking resources is minimal. However when organizations are in the beginning of applying this or any governance framework it can be a helpfull instrument to prevent mistakes or to ensure business continuity.
+
+<!-- ### An example of locking a App Service via ARM
+```json
+{
+    "type": "Microsoft.Web/sites/providers/locks",
+    "apiVersion": "2016-09-01",
+    "name": "[concat(variables('siteName'), '/Microsoft.Authorization/siteLock')]",
+    "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', variables('siteName'))]"
+    ],
+    "properties": {
+        "level": "CanNotDelete",
+        "notes": "Site should not be deleted."
+    }
+}
+``` -->
+
+# Further reading
 
 <table><tr><th>Topic</th><th>Resource</th></tr><tr><td>Azure Accounts / Enterprise agreement</td><td>https://docs.microsoft.com/azure/azure-resource-manager/resourcemanager-subscription-governance</td></tr><tr><td>Naming conventions</td><td>https://docs.microsoft.com/azure/guidance/guidance-naming-conventions</td></tr><tr><td>Azure Blueprints</td><td>https://docs.microsoft.com/en-us/azure/governance/blueprints/overview</td></tr><tr><td>Azure policies</td><td>https://docs.microsoft.com/en-us/azure/governance/policy/overview</td></tr><tr><td>Resource tags</td><td>https://docs.microsoft.com/azure/azure-resource-manager/resourcegroup-using-tags</td></tr><tr><td>Resource groups</td><td>https://docs.microsoft.com/azure/azure-resource-manager/resourcegroup-overview</td></tr><tr><td>RBAC</td><td>https://docs.microsoft.com/azure/active-directory/role-based-accesscontrol-what-is</td></tr><tr><td>Azure locks</td><td>https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-lock-resources</td></tr><tr><td>Azure Automation</td><td>https://docs.microsoft.com/azure/automation/automation-intro</td></tr><tr><td>Security Center</td><td>https://docs.microsoft.com/azure/security-center/security-center-intro</td></tr></table>
 
