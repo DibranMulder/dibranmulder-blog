@@ -92,8 +92,8 @@ With **infrastructure as code (IaC)** organizations can make sure that the creat
 
 With **monitoring and logging** organizations can get continous feedback on the health, performance and reliability of their applications. With a good governance framework in place organizations will use the monitoring dashboards as a primairy source of information for their production applications. When RBAC is taking care of developers are typically not authorized to sneak and peek into production. More on that in the least access princple.
 
-## Least access princple
-One very important principle which is truely going to impact your business, both in a developers mindset way but also in a procedural way is the least access princple. Basically it comes down to the fact that no developer has access to read or modify production related resources. DevOps-engineers should use monitoring and logging to get a sense of how table their production applications are running. With this measure we tackle two very important, namely: GPDR law and unintended production disorders.
+## Least access principle
+One very important principle which is truely going to impact your business, both in a developers mindset way but also in a procedural way, is the **least access principle**. Basically it comes down to the fact that no developer has access to read or modify production related resources. DevOps-engineers should use monitoring and logging to get a sense of how table their production applications are running. With this measure we tackle two very important, namely: GPDR law and unintended production disorders.
 
 When DevOps-engineers can't touch production and are obligated to work via the CI/CD pipelines and use monitoring then they are going to think different. Initialy they might slow down but eventually they will test better and add better monitoring and logging to get insights into their applications. You don't want your engineers to run blind and therefore implementing this measure requires true care. You can start with taking away their contributor rights and let them fix issues via the CI/CD pipeline.
 
