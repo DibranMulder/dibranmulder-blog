@@ -88,38 +88,43 @@ With **continous integration** organizations can continously check the status of
 
 With **continuos delivery** organizations can continously deploy their artifacts to a testing environment. Getting the feedback loop as quick as possible boosts the quality of an Agile development cycle. It enables testers to test a developers work earlier and also it enables product owners and stakeholders to provide feedback earlier. Lastly setting up a delivery pipeline to for instance Azure reduces the amount of deployment mistakes. Once the delivery pipeline is setup it should also work for production.
 
-With **infrastructure as code** organizations can make sure that resources created in Azure are consistent throughout environments. Secondly we delegate creating and updating resources to automation accounts. In Azure those accounts are named service principals and operate from Azure Devops and mutate Azure. 
+With **infrastructure as code (IaC)** organizations can make sure that the created resources in Azure are consistent and realiable. IaC enables developers to specify the infrastructure needed for their applications in code. This can either be template like for instance an JSON ARM template, but it can also be a script with Azure CLI or Azure Powershell. It's also possible to use cloud independent tools like Terraform, Ansible or Pulumi. In all cases automation accounts are used to create or update resources in Azure. Secondly within your DevOps platform, like Azure DevOps you can make sure that this IaC code is reviewed by atleast 2 people and use continous delivery pipelines to execute the IaC code against your Azure subscriptions.
 
- all cycles in the development 
-
-desired state, validated, repetative
-
-With **monitoring and logging** organizations d b 
-Don't put a thermometer into production, don't peek around in production. GPDR. 
+With **monitoring and logging** organizations can get continous feedback on the health, performance and reliability of their applications. With a good governance framework in place organizations will use the monitoring dashboards as a primairy source of information for their production applications. When RBAC is taking care of developers are typically not authorized to sneak and peek into production. More on that in the least access princple.
 
 ## Least access princple
-GPDR.
-PIM
+One very important principle which is truely going to impact your business, both in a developers mindset way but also in a procedural way is the least access princple. Basically it comes down to the fact that no developer has access to read or modify production related resources. DevOps-engineers should use monitoring and logging to get a sense of how table their production applications are running. With this measure we tackle two very important, namely: GPDR law and unintended production disorders.
+
+When DevOps-engineers can't touch production and are obligated to work via the CI/CD pipelines and use monitoring then they are going to think different. Initialy they might slow down but eventually they will test better and add better monitoring and logging to get insights into their applications. You don't want your engineers to run blind and therefore implementing this measure requires true care. You can start with taking away their contributor rights and let them fix issues via the CI/CD pipeline.
+
+### Temporary access via Privileged Identity Management
+Ofcourse we understand that sometimes when a production issue occurs DevOps-engineers have to look into the Azure resources manually. Ideally this is not what you want since how do you know they don't break other things? How do you know that they do not get access data privacy related data and so on. However sometimes its necessary, especially when the logging isn't suffice.
+
+Azure Active Directory has a great feature for this scenario, its called Privileged Identity Management, short PIM. With PIM adminstrators can give **just-in-time** role assignments to DevOps-engineers. The role assignments can be **time-bound** so that the role assignments will be resigned after a given period of time. Secondly a very important feature for GPDR and the Dutch AVG privacy laws is the **audit history**. An admin can download an audit history for the temporary evelated privileges, this can be needed for audits regarding privacy and security.
+
+## So what are Azure Policy and Azure Blueprints?
+So once you've setup the DevOps practices you can apply Azure policies and blueprints to further secure your Azure environment and ensure compliance. Policies are basically a set of rules to which an Azure resource has to comply. Think about tagging your Azure resources with costs center tags or maybe you want to enable SSL/TLS for all web traffic and disable plain Http encrypted traffic. You can enforce this with Azure Policy. 
+
+Blueprints on the other hand are more a template sort of functionality. It enables organizations to define a way of setting up Azure resources, a default way of setting up for instance a SQL Server with a Web App. Complying to the set of rules defined by your organization, like for instance default SSL/TLS, always encrypted databases, integrated Active Directory authentication and so on. This helps to prevent that Azure resources are being created that do not comply to your policies.
+
 https://docs.microsoft.com/en-us/azure/devops/learn/what-is-devops
 https://www.microsoft.com/en-us/us-partner-blog/2019/07/24/azure-governance
 
 # 4. Add security with Role based Access Control (RBAC)
 <figure><img src="/images/governance/rbac-overview.png" style="width:400px"><figcaption style="font-style: italic; text-align: center;">[Azure - Role Bassed Access Control](https://docs.microsoft.com/en-us/azure/role-based-access-control/overview)</figcaption></figure>
 
-Users
-Groups
-PIM
+One of the key pilars of any governance framework is an authorization / authentication framework. In Azure its tightly linked with Azure Active Directory and how that integrates with Azure resources. In essence there are 4 types of security principals namely: **users**, **groups**, **service principals** and **managed identities**. Those service principals are then **assigned a role**, typically: **owner**, **contributor** or **reader** to a specific scope. Lets say a resource group or subscription.
 
-## Tips
-1. Don't assign roles directly to users, preferably use groups.
-2. Use the least access principle.
- - An user is provided the minimum privileges needed to accomplish the tasks they are authorized to perform.
+## Users and groups
+Having a clear separation between production and dev/test workloads helps to arrange the right RBAC implementation. For dev and test subscription you might want to assign everyone the contributor role to the whole subscription. In acceptance workloads you might want to narrow down the role assignments to teams of DevOps-engineers being having reader role assignments to their resource groups. And in production you only want maybe first line of support engineers to have reader role assignments.
 
+When DevOps-engineers are assigned roles to certain Azure scopes its very important to create logical groups of users, and then assign the roles to those groups instead of to users directly. If an admin assigns roles directly to users it will quickly become a clumsy mess of role assignments, and people eventually will get access to the Azure resources which they should get access to. irectly to user accounts. It will quickly become a clumsy mess swamp of role assignments which is not controllable. 
 
-Least access principle.
+## Managed identities
+Managed identities are basically security principals that behave on behalf of applications. These managed identities and their role assignments should always be created through Infrastructure as Code. Redeploying applications should never break these identities. 
 
-A recommended security practice in which every user is provided with only the minimum privileges needed to accomplish the tasks they are authorized to perform. This practice minimizes the number of Global Administrators and instead uses specific administrator roles for certain scenarios.
-https://docs.microsoft.com/en-us/azure/active-directory/privileged-identity-management/pim-configure
+## Service principals
+Service principals on the other hand are Azure security principals that are used to connected other services to the Azure environment. Its often used to connect Azure Devops pipeliens to an Azure account. Its very important that these sevice principals do not become God accounts. Its a common mistake to allow the service principals on the whole subscription. One should always narrow the scope of such a service principals to the resource groups a team should have access to. Secondly the service principals will have access to production application. If a developer has access to the service principals via for instance Azure DevOps pipelines then the engineer basically has delegated production rights. Administrators therefore have to take care of the Azure DevOps roles and rights aswell. The rule of thumb that we use alot is that every change has to be seen by 2 sets of eyes. So a DevOps-engineer should never be able to release anything into production without having an extra peer review. This especially counts for edits on the release pipelines, thats why Yaml release pipelines are such a great feature.
 
 # 5. Bring logic in the universe with Azure Resource Groups
 <figure><img src="/images/governance/resource-group-example.png" style="width:600px"><figcaption style="font-style: italic; text-align: center;">Azure Resource Groups example</figcaption></figure>
@@ -135,31 +140,12 @@ With this resource groups are a logical set up Azure resources that are deployed
 # 7. Automate your work with Azure Automation
 
 
-# 8. Tags your resources to get insights
-Tagging resources can help to identify important properties of Azure resources. 
+# 8. Tag your resources to get insights
+Tagging resources can help to identify important properties of Azure resources. Its often used as a type of documentation for Azure resources. Most of the time a tag is correlated to either: accountability, costs or reliability, but other categories can be usefull aswell. With accountability tags we often try to answer questions like: Who created this resource? Who should we contact if anything happends? Which business unit is accountable? And additionally some tracability. For costs related tags we often try to answer questions like: Who is paying for the resource? Which budget does it relate to? And lastly with reliability tags we answers questions like: What is the expected uptime? Is this resource business critical? What needs to happends when a disaster happends?
 
-Most of the time I split them up into 3 categories, namely accountability, costs and reliability.
+You can use the template below as a starting point([Copied from Microsoft](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/naming-and-tagging])).
 
-## Accountability
-Basically answers: Who created this resource? Who should we contact if anything happends? Which business unit is accountable? And some tracability.
-- Start date of the project
-- End date of the project
-- Application name
-- Approver name
-- Requester name
-- Owner name
-- Business unit
-
-## Costs
-Basically answers: Who is paying for the resource? Which budget does it relate to?
-- Budget required/approved
-- Cost center	
-- Environment deployment 
-
-## Reliablity
-Basically answers: What is the expected uptime? Is this resource business critical? What needs to happends when a disaster happends?
-- Disaster recovery
-- Service class
+<table><tr><th>Accountability</th><th>Costs</th><th>Reliablity</th></tr><tr><td>Start date of the project</td><td>Budget required/approved</td><td>Disaster recovery</td></tr><tr><td>End date of the project</td><td>Cost center</td><td>Service class</td></tr><tr><td>Application name</td><td>Environment deployment</td><td></td></tr><tr><td>Approver name</td><td></td><td></td></tr><tr><td>Requester name</td><td></td><td></td></tr><tr><td>Owner name</td><td></td><td></td></tr><tr><td>Business unit</td><td></td><td></td></tr></table>
 
 # 9. Lock your viable resources
 A quick win for organizations who start to implement the governance framework is to enable locking. With locking you can prevent developers or ops-engineers to accidentely remove or edit Azure resources. This can be very helpfull in securing critical production workloads. Within Azure there are 2 types of locks, namely: CanNotDelete and ReadOnly.
