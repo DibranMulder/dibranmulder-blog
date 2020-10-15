@@ -1,5 +1,6 @@
 ---
 title: Running an OpenAI Gym on Windows with WSL
+date: 2019-09-06 16:17:55
 tags:
 - AI
 - OpenAI

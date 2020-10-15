@@ -1,5 +1,6 @@
 ---
 title: Autonoom rijden
+date: 2019-08-16
 tags:
 - Self driving cars
 - Autonoom rijden
