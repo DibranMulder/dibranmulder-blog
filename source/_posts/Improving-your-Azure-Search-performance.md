@@ -5,7 +5,7 @@ tags:
 - Azure
 - Azure Search
 ---
-It can be quite a struggle to really understand the ins and outs of Azure Search, how search results are scored, and how scoring profiles with weights and functions add up. In this blog post I intend to explain the inner workings of Azure Search, describing the scoring algorithm and how to tweak it to your advantage. I will also provide some practical tips to improve your search performance, but in order to apply those tips correctly you'll first need to have a deeper understanding of Azure Search itself. 
+It can be quite a struggle to really understand the ins and outs of Azure Search, how search results are scored, and how scoring profiles with weights and functions add up. In this blog post I intend to explain the inner workings of Azure Search, describe the scoring algorithm and how you can tweak it to your advantage. I will also provide some practical tips to improve your search performance, but in order to apply those tips correctly you'll first need to have a deeper understanding of Azure Search itself. 
 
 # Azure Search
 <figure><img src="/images/search/azure-search-diagram.svg" /><figcaption style="font-style: italic; text-align: center;"><a href="https://docs.microsoft.com/bs-cyrl-ba/azure/search/search-what-is-azure-search">Azure Cognitive Search</a></figcaption></figure>
