@@ -22,6 +22,8 @@ The search engine of Azure Cognitive Search is quite complex and, to be honest, 
 Indexing documents basically comes down to the creation of a database which stores a set of tokens per field that are generated for each document that has been indexed. The search engine will then use this so called index to evaluate a given query to it. What's important to notice is is that the same process for indexing a document aswell as for tokenizing a query is performed. The data either a document or a search query will go through a so called analyzer, more on those later.
 
 ## Index
+<figure><img src="/images/search/sampleindex.png" style="width: 400px;" /><figcaption style="font-style: italic; text-align: center;">Example of an Azure Cognitive Search Index</figcaption></figure>
+
 An Azure Cognitive Search index consists of `fields`, `analyzers`, `charFilters`, `tokenizers` and `tokenFilters`. In most cases one wouldn't need to create a custom analyzer and prefer the use of one of the pre-built analyzers, such as the language specific analyzers (nl.microsoft, en.microsoft), or the default analyzer. However, it is possible to create a custom analyzer and configure it for the appropriate fields. Note that every field can have its own analyzer configured. It is even possible to configure separate analyzers for indexing a document and searching (querying) a document. This can be a useful option in the scenario where one is trying to reduce noise in search results. Particularly the pre-built language analyzers generate a lot of linguistic tokens that are not necessarily helpful at all times. Below is a JSON representation of an index:
 ```json
  {
@@ -190,6 +192,10 @@ Azure Cognitive Search uses a scoring algorithm which is not published as part o
 
 {% katex %}
 % s = \displaystyle\left(\sum_{i=0}^\infin{f_s(a_i) * w_i}\right)*\left(f_a({\sum_{n=0}^\infin{f_n(x)}})\right)\\
+s_t = (weighted field scores) * (function aggregation)
+{% endkatex %}
+Further specification of the function
+{% katex %}
 s_t = ((f_s(a_1) * w_1) + (f_s(a_2) * w_2) + ...) * (f_a(f_1(x), f_2(x), ...))
 {% endkatex %}
 </br>
@@ -218,7 +224,7 @@ Lets say we have a document that has a written date of 50 days ago. The range of
 
 ### Total
 {% katex %}
-total score = (weighted field scores) * (function aggregation)
+s_t = ((f_s(a_1) * w_1) + (f_s(a_2) * w_2) + ...) \boldsymbol{*} (f_a(f_1(x), f_2(x), ...))
 {% endkatex %}
 This brings us to the grand total score of a document, including weights, functions and boosting. The final score is a simple multiplication of the total weighted field scores times the total score of the function aggregation.
 
@@ -238,7 +244,7 @@ This gives you an idea of whether the change you have made has a major impact or
 ## Analyzing a regression test
 When you have performed a regression test, it is wise to classify each major change as an improvement or a deterioration. Of course, you cannot classify changes based on the average change rate alone, you will have to look at certain search terms more closely. What I find a clear and good method is to compare two test runs with each other and generate the following table:
 
-| Search term     | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+| Search term     | Rank 1 | Rank 2 | Rank 3 | Rank 4 | Rank 5 | Rank 6 | Rank 7 | Rank 8 | Rank 9 | Rank 10 |
 |-----------------|--------------------------------------|---|---|---|---|---|---|---|---|----|
 | Racing bike     |<span class="w3-badge w3-orange">2</span>|<span class="w3-badge w3-orange w3-orange">3</span>|<span class="w3-badge w3-orange">4</span>|<span class="w3-badge w3-orange">5</span>|<span class="w3-badge w3-orange w3-red">1</span>|<span class="w3-badge">6</span>|<span class="w3-badge">7</span>|<span class="w3-badge">8</span>|<span class="w3-badge">9</span>|<span class="w3-badge">10</span>|
 | Gravel bike     |<span class="w3-badge">1</span>|<span class="w3-badge">2</span>|<span class="w3-badge">3</span>|<span class="w3-badge w3-orange ">5</span>|<span class="w3-badge w3-orange ">4</span>|<span class="w3-badge">6</span>|<span class="w3-badge">7</span>|<span class="w3-badge">8</span>|<span class="w3-badge">9</span>|<span class="w3-badge">10</span>|
@@ -249,10 +255,11 @@ When you have performed a regression test, it is wise to classify each major cha
 | Bicycle lights  |<span class="w3-badge w3-green">7</span>|<span class="w3-badge w3-orange ">4</span>|<span class="w3-badge w3-orange ">3</span>|<span class="w3-badge w3-orange ">2</span>|<span class="w3-badge w3-orange ">5</span>|<span class="w3-badge w3-orange ">6</span>|<span class="w3-badge w3-red">1</span>|<span class="w3-badge w3-orange ">8</span>|<span class="w3-badge">9</span>|<span class="w3-badge">10</span>|
 | Cycling bibs    |<span class="w3-badge">1</span>|<span class="w3-badge w3-orange ">4</span>|<span class="w3-badge w3-orange ">6</span>|<span class="w3-badge w3-orange ">2</span>|<span class="w3-badge w3-orange ">5</span>|<span class="w3-badge w3-orange ">3</span>|<span class="w3-badge w3-orange ">7</span>|<span class="w3-badge w3-orange ">8</span>|<span class="w3-badge">9</span>|<span class="w3-badge">10</span>|
 | Cycling tights  |<span class="w3-badge">1</span>|<span class="w3-badge">2</span>|<span class="w3-badge">3</span>|<span class="w3-badge">4</span>|<span class="w3-badge">5</span>|<span class="w3-badge">6</span>|<span class="w3-badge">7</span>|<span class="w3-badge w3-orange ">10</span>|<span class="w3-badge w3-orange ">9</span>|<span class="w3-badge w3-orange ">8</span>|
+| Cycling glasses  |<span class="w3-badge">1</span>|<span class="w3-badge">2</span>|<span class="w3-badge">3</span>|<span class="w3-badge">4</span>|<span class="w3-badge">5</span>|<span class="w3-badge w3-orange">8</span>|<span class="w3-badge">7</span>|<span class="w3-badge w3-orange">6</span>|<span class="w3-badge">9</span>|<span class="w3-badge">10</span>|
 
 <span class="w3-badge w3-green">?</span> If the document has moved more than 5 ranks up.
 <span class="w3-badge w3-red ">?</span> If the document has moved more than 5 ranks down.
-<span class="w3-badge w3-orange ">?</span> If the document stayed within a margin of 3 ranks.
+<span class="w3-badge w3-orange ">?</span> If the document stayed within a margin of 4 ranks.
 <span class="w3-badge">?</span> If the document has the same rank.
 
 In the above example, I used a gold set of 10 search terms which could be used by our hypothetical bicycle e-commerce store. In this overview, the significance of the change can be seen quickly and easily. When you see major changes, you can always analyze the results more closely and see if the change you made in case of a single search term is an improvement or a deterioration. If too many deteriorations have occurred, consider whether you want to bring the adjustment live.
