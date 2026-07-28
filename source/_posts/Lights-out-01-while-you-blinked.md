@@ -1,5 +1,5 @@
 ---
-title: Lights Out, part 1 the insane adoption of agentic coding
+title: "Lights Out, part 1: the insane adoption of agentic coding"
 date: 2026-07-28 16:17:55
 tags:
  - AI
@@ -24,15 +24,15 @@ Which is itself part of the story. The single most consequential shift in how so
 
 If the commit data feels abstract, the practitioner quotes do not.
 
-Ryan Dahl — the creator of Node.js, not a man given to hype — posted in January: "the era of humans writing code is over. Disturbing for those of us who identify as SWEs, but no less true. That's not to say SWEs don't have work to do, but writing syntax directly is not it." Seven million views.
+Ryan Dahl, the creator of Node.js and not a man given to hype, posted in January: "the era of humans writing code is over. Disturbing for those of us who identify as SWEs, but no less true. That's not to say SWEs don't have work to do, but writing syntax directly is not it." Seven million views.
 
 Boris Cherny, who built Claude Code, says of his own team: "Pretty much 100% of our code is written by Claude Code + Opus 4.5."
 
 Malte Ubl, CTO of Vercel, describes his job with a precision that should make you uncomfortable: "my new primary job" is "to tell AI what it did wrong."
 
-And Andrej Karpathy — the man who coined "vibe coding" — reports the thing nobody wants to say out loud: "I've already noticed that I am slowly starting to atrophy my ability to write code manually. Generation (writing code) and discrimination (reading code) are different capabilities in the brain."
+And Andrej Karpathy, the man who coined "vibe coding", reports the thing nobody wants to say out loud: "I've already noticed that I am slowly starting to atrophy my ability to write code manually. Generation (writing code) and discrimination (reading code) are different capabilities in the brain."
 
-That last quote is the one I'd pin above my desk. It is not a complaint about the tools. It is an early clinical note on what the tools do to us. Hold onto it — a later post in this series is entirely about it.
+That last quote is the one I'd pin above my desk. It is not a complaint about the tools. It is an early clinical note on what the tools do to us. Hold onto it, because a later post in this series is entirely about it.
 
 Meanwhile David Heinemeier Hansson, of Rails, writes elegies: "Writing Ruby code by hand in a text editor feels like such a luxury. Maybe this will soon be a lost art."
 
@@ -42,7 +42,7 @@ When the authors of your runtime, your framework, and your tooling all independe
 
 Here is the number from all this research that I find most actionable, and it is not the 4%.
 
-The Stack Overflow 2025 Developer Survey found **84% of developers using AI** in some form — and only **31% using coding agents**.
+The Stack Overflow 2025 Developer Survey found **84% of developers using AI** in some form, and only **31% using coding agents**.
 
 Eighty-four versus thirty-one. That gap is the entire competitive landscape of the next eighteen months.
 
@@ -50,7 +50,7 @@ Because those are not two points on the same curve. Autocomplete and agentic del
 
 Most organisations I talk to think they are in the second group because they bought licences. They are in the first group. Buying Copilot seats is not agentic adoption, any more than buying Jira made anyone agile.
 
-And the enterprise money has already moved. Accenture signed a multi-year partnership with Anthropic to train **30,000 professionals** on Claude — the largest Claude Code deployment to date at the time of announcement — aimed squarely at financial services, life sciences, healthcare, and the public sector. Those are the regulated, conservative, change-averse industries. They are not waiting for your architecture board to finish deliberating.
+And the enterprise money has already moved. Accenture signed a partnership with Anthropic, running over several years, to train **30,000 professionals** on Claude. At the time of announcement it was the largest Claude Code deployment to date, and it aimed squarely at financial services, life sciences, healthcare, and the public sector. Those are the regulated, conservative industries that resist change. They are not waiting for your architecture board to finish deliberating.
 
 ## The Torvalds arc
 
@@ -60,7 +60,7 @@ If you want a single narrative that captures how completely the ground has shift
 
 He gave himself five years. It took roughly eighteen months.
 
-**November 2025.** At Open Source Summit Korea he is "fairly positive" about vibe coding as a way for people to "get computers to do something that maybe they couldn't do otherwise" — but warns it "may be a horrible, horrible idea from a maintenance standpoint." He is still not using AI-assisted coding himself. He complains about maintainers drowning in "bugs and security notices that are… made up by people who misuse AI."
+**November 2025.** At Open Source Summit Korea he is "fairly positive" about vibe coding as a way for people to "get computers to do something that maybe they couldn't do otherwise", but warns it "may be a horrible, horrible idea from a maintenance standpoint." He is still not using AI assistance for his own coding. He complains about maintainers drowning in "bugs and security notices that are… made up by people who misuse AI."
 
 **January 2026.** He publishes AudioNoise. From his own README: "the python visualizer tool has been basically written by vibe-coding… I cut out the middle-man -- me -- and just used Google Antigravity to do the audio sample visualizer."
 
@@ -96,13 +96,13 @@ One hundred percent of them got through the most scrutinised code review process
 
 Andrew Morton's reaction was the correct engineering reaction: "Rule #1 is, surely, 'don't add bugs'. This thing finds bugs. If its hit rate is 50% then that's plenty high enough… That's a really high hit rate! How can we possibly not use this, if we care about Rule #1?"
 
-And the pushback was equally correct. Within a month Sashiko had produced over 10,000 reviews averaging some 3,500 words per patch, with a false-positive rate its own author put in the neighbourhood of 20%. Lorenzo Stoakes, on the proposal to make responses to every bot comment mandatory: "Andrew, for crying out loud. Please don't do this."
+And the pushback was equally correct. Within a month Sashiko had produced over 10,000 reviews averaging some 3,500 words per patch, with a rate of false positives its own author put in the neighbourhood of 20%. Lorenzo Stoakes, on the proposal to make responses to every bot comment mandatory: "Andrew, for crying out loud. Please don't do this."
 
 Both men are right. That is the whole problem in miniature. The tool creates real value and real load, and the load lands on humans who did not choose it. Nothing in your Definition of Done, your sprint ceremony, or your team topology was designed for an actor that generates 3,500 words of plausible review commentary per patch at four in the morning.
 
 ## What this series is about
 
-So: the adoption question is settled. It happened faster than the measurement infrastructure, faster than Torvalds's own five-year estimate, and faster than any governance framework you have written.
+So: the adoption question is settled. It happened faster than the measurement infrastructure, faster than the five years Torvalds gave himself, and faster than any governance framework you have written.
 
 What is emphatically *not* settled is everything downstream. Who is accountable when the commit was authored by an agent and merely approved by a human? What does a sprint mean when the work happens overnight and continuously? What happens to the craft of engineering when, as Karpathy warns, the generation muscle atrophies while the discrimination muscle becomes the only one that pays? What does a team look like when its throughput is bounded by review capacity rather than typing capacity?
 
@@ -112,24 +112,24 @@ That is the uncomfortable middle we now live in. The machines write. We are stil
 
 Lights out. Let's see what's actually running in the dark.
 
----
+***
 
-*Next in this series: **Who is running the nightshift?** — what it actually means to have agents working while your team sleeps, and why nobody owns the output.*
+*Next in this series: **Who is running the nightshift?** What it actually means to have agents working while your team sleeps, and why nobody owns the output.*
 
----
+***
 
 ## Sources
 
-- SemiAnalysis, "Claude Code is the Inflection Point," 5 February 2026 — https://newsletter.semianalysis.com/p/claude-code-is-the-inflection-point (Dahl, Cherny, Ubl, Karpathy and DHH quotes, Stack Overflow figures and the Accenture deal are all cited via this note; originals linked within it)
-- Stack Overflow Developer Survey 2025 — https://survey.stackoverflow.co/2025
-- Accenture / Anthropic partnership announcement — https://newsroom.accenture.com/news/2025/accenture-and-anthropic-launch-multi-year-partnership-to-drive-enterprise-ai-innovation-and-value-across-industries
-- Torvalds, "90% marketing and 10% reality," TFiR interview, published 17 October 2024 — https://tfir.io/linus-torvalds-on-the-kernel-genai-evs-programming-languages-and-more/
-- Torvalds on vibe coding, Open Source Summit Korea, The Register, 18 November 2025 — https://www.theregister.com/2025/11/18/linus_torvalds_vibe_coding/
-- Torvalds, AudioNoise README — https://github.com/torvalds/AudioNoise
-- Torvalds, Linux 7.1-rc4 release announcement, 17 May 2026 — https://lwn.net/Articles/1073192/
-- Torvalds & Hohndel keynote, Open Source Summit NA, LWN, 25 May 2026 — https://lwn.net/Articles/1073761/
-- Torvalds, "Linux is not one of those anti-AI projects," linux-media list, mid-July 2026 — https://lore.kernel.org/linux-media/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/ (reproduced verbatim at https://www.phoronix.com/news/Linux-Is-Not-Anti-AI)
-- Linux kernel, `Documentation/process/coding-assistants.rst` — https://docs.kernel.org/process/coding-assistants.html
-- Linux kernel, "Guidelines for Tool-Generated Content" — https://docs.kernel.org/process/generated-content.html
-- Sashiko announcement and Gushchin's 53% measurement, LWN, 19 March 2026 — https://lwn.net/Articles/1063303/
-- Sashiko in the mm workflow (Morton / Stoakes exchange, review volume), LWN, 31 March 2026 — https://lwn.net/Articles/1064830/
+- SemiAnalysis, "Claude Code is the Inflection Point," 5 February 2026. https://newsletter.semianalysis.com/p/claude-code-is-the-inflection-point (Dahl, Cherny, Ubl, Karpathy and DHH quotes, Stack Overflow figures and the Accenture deal are all cited via this note; originals linked within it)
+- Stack Overflow Developer Survey 2025. https://survey.stackoverflow.co/2025
+- Accenture and Anthropic partnership announcement. https://newsroom.accenture.com/news/2025/accenture-and-anthropic-launch-multi-year-partnership-to-drive-enterprise-ai-innovation-and-value-across-industries
+- Torvalds, "90% marketing and 10% reality," TFiR interview, published 17 October 2024. https://tfir.io/linus-torvalds-on-the-kernel-genai-evs-programming-languages-and-more/
+- Torvalds on vibe coding, Open Source Summit Korea, The Register, 18 November 2025. https://www.theregister.com/2025/11/18/linus_torvalds_vibe_coding/
+- Torvalds, AudioNoise README. https://github.com/torvalds/AudioNoise
+- Torvalds, Linux 7.1-rc4 release announcement, 17 May 2026. https://lwn.net/Articles/1073192/
+- Torvalds and Hohndel keynote, Open Source Summit NA, LWN, 25 May 2026. https://lwn.net/Articles/1073761/
+- Torvalds, "Linux is not one of those anti-AI projects," linux-media list, mid-July 2026. https://lore.kernel.org/linux-media/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/ (reproduced verbatim at https://www.phoronix.com/news/Linux-Is-Not-Anti-AI)
+- Linux kernel, `Documentation/process/coding-assistants.rst`. https://docs.kernel.org/process/coding-assistants.html
+- Linux kernel, "Guidelines for Tool-Generated Content". https://docs.kernel.org/process/generated-content.html
+- Sashiko announcement and Gushchin's 53% measurement, LWN, 19 March 2026. https://lwn.net/Articles/1063303/
+- Sashiko in the mm workflow (Morton and Stoakes exchange, review volume), LWN, 31 March 2026. https://lwn.net/Articles/1064830/
