@@ -1,6 +1,14 @@
-# While You Blinked
-
-### Lights Out, part 1: the insane adoption of agentic coding
+---
+title: Lights Out, part 1 the insane adoption of agentic coding
+date: 2026-07-28 16:17:55
+tags:
+ - AI
+ - Agentic coding
+ - Software development
+ - Developer tools
+ - Productivity
+---
+## While You Blinked
 
 On 5 February 2026, SemiAnalysis opened a research note with a sentence that should have rattled every engineering manager in Europe:
 
