@@ -1,158 +1,148 @@
-// https://github.com/chriskempson/tomorrow-theme
-highlight-background = #2d2d2d
-highlight-current-line = #393939
-highlight-selection = #515151
-highlight-foreground = #cccccc
-highlight-comment = #999999
-highlight-red = #f2777a
-highlight-orange = #f99157
-highlight-yellow = #ffcc66
-highlight-green = #99cc99
-highlight-aqua = #66cccc
-highlight-blue = #6699cc
-highlight-purple = #cc99cc
+// Code is the one dark surface in the design. Hexo emits
+// figure.highlight > table > tr > td.gutter + td.code, with unprefixed
+// highlight.js token classes (hljs: false in _config.yml).
 
-$code-block
-  background: highlight-background
-  margin: 0 article-padding * -1
-  padding: 15px article-padding
-  border-style: solid
-  border-color: color-border
-  border-width: 1px 0
-  overflow: auto
-  color: highlight-foreground
-  line-height: font-size * line-height
+.prose
 
-$line-numbers
-  color: #666
-  font-size: 0.85em
+  figure.highlight, pre
+    border: 1px solid color-code-border
+    border-radius: 8px
+    background: color-code-bg
+    overflow: hidden
+    color: color-code-text
 
-.article-entry
-  pre, code
-    font-family: font-mono
-  code
-    background: color-background
-    text-shadow: 0 1px #fff
-    padding: 0 0.3em
   pre
-    @extend $code-block
-    code
-      background: none
-      text-shadow: none
-      padding: 0
-  .highlight
-    @extend $code-block
-    pre
-      border: none
-      margin: 0
-      padding: 0
-    table
-      margin: 0
-      width: auto
-    td
-      border: none
-      padding: 0
-    figcaption
-      clearfix()
-      font-size: 0.85em
-      color: highlight-comment
-      line-height: 1em
-      margin-bottom: 1em
-      a
-        float: right
-    .gutter pre
-      @extend $line-numbers
-      text-align: right
-      padding-right: 20px
-    .line
-      height: font-size * line-height
-    .line.marked
-      background: highlight-selection
-  .gist
-    margin: 0 article-padding * -1
-    border-style: solid
-    border-color: color-border
-    border-width: 1px 0
-    background: highlight-background
-    padding: 15px article-padding 15px 0
-    .gist-file
-      border: none
-      font-family: font-mono
-      margin: 0
-      .gist-data
-        background: none
-        border: none
-        .line-numbers
-          @extend $line-numbers
-          background: none
-          border: none
-          padding: 0 20px 0 0
-        .line-data
-          padding: 0 !important
-      .highlight
-        margin: 0
-        padding: 0
-        border: none
-      .gist-meta
-        background: highlight-background
-        color: highlight-comment
-        font: 0.85em font-sans
-        text-shadow: 0 0
-        padding: 0
-        margin-top: 1em
-        margin-left: article-padding
-        a
-          color: color-link
-          font-weight: normal
-          &:hover
-            text-decoration: underline
+    font-family: font-mono
+    font-size: 13px
+    line-height: 1.8
+    padding: 18px
+    overflow-x: auto
 
-pre
-  .comment
-  .title
-    color: highlight-comment
-  .variable
-  .attribute
-  .tag
-  .regexp
-  .ruby .constant
-  .xml .tag .title
-  .xml .pi
-  .xml .doctype
-  .html .doctype
-  .css .id
-  .css .class
-  .css .pseudo
-    color: highlight-red
-  .number
-  .preprocessor
-  .built_in
-  .literal
+  code
+    // Inside a dark block the inline chip styling has to be undone.
+    pre &, figure.highlight &
+      background: none
+      border: 0
+      padding: 0
+      font-size: inherit
+
+  figure.highlight
+    font-family: font-mono
+    font-size: 13px
+    line-height: 1.8
+
+    // Filename/language bar, injected by script.js.
+    .code-head
+      display: flex
+      align-items: center
+      justify-content: space-between
+      gap: 16px
+      padding: 10px 15px
+      border-bottom: 1px solid color-code-rule
+      font-size: 11px
+      color: color-code-meta
+
+    .code-lang
+      letter-spacing: 0.08em
+
+    .code-copy
+      background: none
+      border: 0
+      padding: 0
+      font-family: font-mono
+      font-size: 11px
+      color: color-code-key
+      cursor: pointer
+
+      &:hover
+        color: #fff
+
+    table
+      width: 100%
+      border-collapse: collapse
+      display: block
+
+    tr, tbody
+      display: block
+
+    tr
+      display: flex
+
+    td
+      border: 0
+      padding: 0
+      vertical-align: top
+
+    pre
+      border: 0
+      border-radius: 0
+      background: none
+      margin: 0
+      padding: 18px 0
+
+    .gutter
+      flex: none
+      user-select: none
+
+      pre
+        padding-left: 18px
+        padding-right: 14px
+        text-align: right
+        color: #4d5a6b
+
+    // Only the code column scrolls, so the line numbers stay put.
+    .code
+      flex: 1 1 auto
+      min-width: 0
+      overflow-x: auto
+
+      pre
+        padding-right: 18px
+
+    .line
+      display: inline-block
+      min-width: 100%
+
+  // Tokens
+  .comment, .quote
+    color: color-code-comment
+    font-style: italic
+
+  .keyword, .selector-tag, .literal, .meta-keyword, .doctag
+    color: #c79ae0
+
+  .attr, .attribute, .property, .variable, .template-variable
+    color: color-code-key
+
+  .string, .regexp, .addition, .meta-string
+    color: color-code-string
+
+  .number, .symbol, .bullet
+    color: color-code-number
+
+  .title, .name, .function, .class, .section, .selector-id
+    color: #8fb8e8
+
   .params
-  .constant
-    color: highlight-orange
-  .class
-  .ruby .class .title
-  .css .rules .attribute
-    color: highlight-green
-  .string
-  .value
-  .inheritance
-  .header
-  .ruby .symbol
-  .xml .cdata
-    color: highlight-green
-  .css .hexcolor
-    color: highlight-aqua
-  .function
-  .python .decorator
-  .python .title
-  .ruby .function .title
-  .ruby .title .keyword
-  .perl .sub
-  .javascript .title
-  .coffeescript .title
-    color: highlight-blue
-  .keyword
-  .javascript .function
-    color: highlight-purple
+    color: color-code-text
+
+  .tag
+    color: #8fb8e8
+
+  .tag .name
+    color: #c79ae0
+
+  .punctuation, .operator
+    color: color-code-meta
+
+  .meta
+    color: color-code-meta
+
+  .deletion
+    color: #e08c8c
+
+  .emphasis
+    font-style: italic
+
+  .strong
+    font-weight: 600

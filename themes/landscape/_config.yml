@@ -1,37 +1,46 @@
+# Identity
+# Shown as the wordmark in the header. Falls back to the site author/title.
+wordmark: Dibran Mulder
+
 # Header
 menu:
-  Home: /
-  Archives: /archives
+  Writing: /
+  Archive: /archives
+  About: /about
 rss: /atom.xml
 
+# Home hero
+hero:
+  title: Identity you can prove, code you can trust.
+  lede: I'm CTO at Yivi and Caesar Groep. Long, specific writing on privacy-first digital identity and on engineering practice in the age of coding agents.
+
+# Rendered under the hero, in order
+social:
+  GitHub: https://github.com/DibranMulder
+  LinkedIn: https://www.linkedin.com/in/dibranmulder/
+
 # Content
-excerpt_link: Read More
+show_excerpts: true
+excerpt_link: Read more
 fancybox: true
 
-# Sidebar
-sidebar: right
-widgets:
-- category
-- tag
-- tagcloud
-- archive
-- recent_posts
+# Reading view
+toc: true
+words_per_minute: 200
+author:
+  name: Dibran Mulder
+  bio: CTO at Yivi and Caesar Groep. Digital identity, and engineering with agents.
+  # Path to a portrait; leave empty for the placeholder hatch.
+  avatar:
+  link: /about/
 
-# display widgets at the bottom of index pages (pagination == 2)
-index_widgets:
-# - category
-# - tagcloud
-# - archive
-
-# widget behavior
-archive_type: 'monthly'
-show_count: false
+# Footer
+footer_note: Yivi · Caesar Groep
 
 # Miscellaneous
 google_analytics: UA-30986898-2
 gauges_analytics:
 favicon: favicon.ico
 twitter:
-google_plus:
 fb_admins:
 fb_app_id:

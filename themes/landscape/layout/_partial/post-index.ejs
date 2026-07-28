@@ -1,0 +1,41 @@
+<%
+// Year-grouped index used by the archive, category and tag pages.
+var posts = page.posts.toArray();
+var groups = [];
+var current = null;
+
+posts.forEach(function(post){
+  var year = post.date.year();
+  if (!current || current.year !== year){
+    current = {year: year, posts: []};
+    groups.push(current);
+  }
+  current.posts.push(post);
+});
+%>
+<div class="page page-index">
+  <header class="index-head">
+    <h1><%= heading %></h1>
+    <% if (blurb){ %>
+      <p class="index-blurb"><%= blurb %></p>
+    <% } %>
+  </header>
+
+  <% groups.forEach(function(group){ %>
+    <section class="index-year">
+      <div class="index-year-label"><%= group.year %></div>
+      <% group.posts.forEach(function(post){ %>
+        <a class="index-row" href="<%- url_for(post.path) %>">
+          <span class="index-row-date"><%= date(post.date, 'D MMM') %></span>
+          <span class="index-row-title"><%= post.title || '(no title)' %></span>
+        </a>
+      <% }) %>
+    </section>
+  <% }) %>
+
+  <% if (!posts.length){ %>
+    <p class="index-blurb">Nothing here yet.</p>
+  <% } %>
+
+  <%- partial('_partial/paginator') %>
+</div>

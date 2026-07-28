@@ -1,0 +1,174 @@
+// The reading view collapses in two steps: the author rail drops under the
+// article first, then the contents rail goes away entirely on phones.
+
+@media mq-mid
+  .reading-grid
+    grid-template-columns: toc-width minmax(0, measure)
+    gap: 40px
+
+  .reading-rail-author
+    grid-column: 1 / -1
+    position: static
+    flex-direction: row
+    flex-wrap: wrap
+    align-items: center
+    gap: 16px
+    border-left: 0
+    border-top: 1px solid color-rule
+    padding: 24px 0 0
+    margin-top: 8px
+
+    .eyebrow
+      width: 100%
+
+    .author-bio
+      flex: 1 1 320px
+      max-width: 60ch
+
+  .home-hero
+    gap: 48px
+
+  .about-hero
+    gap: 40px
+
+@media mq-narrow
+  .page
+    padding: 0 20px
+
+  .reading-grid
+    grid-template-columns: minmax(0, 1fr)
+    padding-top: 40px
+
+  .reading-rail-toc
+    display: none
+
+  .post-hero
+    padding: 48px 0 32px
+
+  .post-hero-inner h1
+    font-size: 40px
+
+  .lede
+    font-size: 21px
+
+  .home-hero
+    grid-template-columns: minmax(0, 1fr)
+    gap: 36px
+    align-items: start
+    padding-top: 52px
+
+  .home-hero-lead h1
+    font-size: 40px
+
+  .post-list-item
+    grid-template-columns: minmax(0, 1fr)
+    gap: 10px
+
+  .post-list-meta
+    flex-direction: row
+    align-items: baseline
+    gap: 14px
+    text-align: left
+    order: -1
+
+  .about-hero
+    grid-template-columns: minmax(0, 1fr)
+    padding-top: 48px
+
+  .about-hero-lead h1
+    font-size: 36px
+
+  .about-hero-aside
+    max-width: 300px
+
+  .about-topics
+    grid-template-columns: minmax(0, 1fr)
+    gap: 28px
+
+  .about-block-split
+    grid-template-columns: minmax(0, 1fr)
+    gap: 18px
+
+    > .eyebrow
+      padding-top: 0
+
+  .about-talk
+    grid-template-columns: minmax(0, 1fr)
+    gap: 4px
+
+  .about-talk-where
+    text-align: left
+
+  .index-head
+    padding-top: 44px
+
+    h1
+      font-size: 34px
+
+  .prose
+    font-size: 18px
+
+    h2
+      font-size: 28px
+
+    h3
+      font-size: 22px
+
+    blockquote
+      font-size: 22px
+      padding-left: 18px
+
+    p.has-dropcap::first-letter
+      font-size: 52px
+
+@media mq-mobile
+  .header-inner
+    flex-direction: column
+    align-items: flex-start
+    gap: 12px
+    padding: 16px 20px
+
+  .site-nav
+    gap: 18px
+    font-size: 11px
+    width: 100%
+    overflow-x: auto
+    scrollbar-width: none
+
+    &::-webkit-scrollbar
+      display: none
+
+  html
+    scroll-padding-top: 130px
+
+  .reading-rail-author
+    position: static
+    top: auto
+
+  #header
+    position: static
+
+  .post-hero-inner h1
+    font-size: 33px
+
+  .home-hero-lead h1
+    font-size: 33px
+
+  .post-nav
+    grid-template-columns: minmax(0, 1fr)
+    gap: 24px
+
+  .post-nav-next
+    text-align: left
+    align-items: flex-start
+
+  .index-row
+    grid-template-columns: 54px 1fr
+    gap: 14px
+
+  .index-row-title
+    font-size: 19px
+
+  .prose p.has-dropcap::first-letter
+    font-size: 44px
+    padding-right: 10px

@@ -1,0 +1,167 @@
+// About: hero with a portrait rail, then labelled blocks separated by rules.
+
+.page-about
+  max-width: 900px
+
+.about-hero
+  display: grid
+  grid-template-columns: 1.5fr 1fr
+  gap: 56px
+  align-items: start
+  padding: 68px 0 40px
+  border-bottom: 1px solid color-rule
+
+.about-hero-lead
+  display: flex
+  flex-direction: column
+  gap: 22px
+
+  h1
+    font-family: font-display
+    font-size: 46px
+    line-height: 1.08
+    letter-spacing: -0.03em
+    font-weight: 500
+    color: color-ink
+    max-width: 22ch
+    text-wrap: balance
+
+.about-intro
+  font-size: 18.5px
+  line-height: 1.7
+  color: color-body-soft
+
+  > * + *
+    margin-top: 22px
+
+  p + p
+    color: color-muted
+
+.about-hero-aside
+  display: flex
+  flex-direction: column
+  gap: 14px
+
+.about-portrait
+  width: 100%
+  border: 1px solid color-rule-strong
+  border-radius: 6px
+
+.about-portrait-placeholder
+  hatch()
+  height: 250px
+
+.about-block
+  padding: 44px 0
+  border-bottom: 1px solid color-rule
+  display: flex
+  flex-direction: column
+  gap: 22px
+
+  &:last-child
+    border-bottom: 0
+    padding-bottom: 60px
+
+.about-block-split
+  display: grid
+  grid-template-columns: 200px 1fr
+  gap: 40px
+  align-items: start
+
+  > .eyebrow
+    padding-top: 4px
+
+.about-topics
+  display: grid
+  grid-template-columns: 1fr 1fr
+  gap: 40px
+
+.about-topic
+  display: flex
+  flex-direction: column
+  gap: 10px
+
+  h2
+    font-family: font-display
+    font-size: 27px
+    letter-spacing: -0.02em
+    font-weight: 500
+    color: color-ink
+
+  p
+    font-size: 16.5px
+    line-height: 1.65
+    color: color-muted
+    text-wrap: pretty
+
+.about-rows
+  display: flex
+  flex-direction: column
+
+.about-row
+  display: grid
+  grid-template-columns: 96px 1fr
+  gap: 20px
+  padding: 15px 0
+  border-top: 1px solid color-rule-soft
+  align-items: baseline
+
+.about-row-when
+  font-family: font-mono
+  font-size: 12px
+  color: color-faint
+
+.about-row-body
+  display: flex
+  flex-direction: column
+  gap: 4px
+
+.about-row-role
+  font-size: 17px
+  font-weight: 500
+  color: color-ink
+
+.about-row-note
+  font-size: 15.5px
+  line-height: 1.55
+  color: color-muted-2
+
+.about-speaking
+  display: flex
+  flex-direction: column
+  gap: 18px
+
+.about-speaking-intro
+  font-size: 17.5px
+  line-height: 1.7
+  color: color-body-soft
+  max-width: 56ch
+  text-wrap: pretty
+
+.about-talks
+  display: flex
+  flex-direction: column
+
+.about-talk
+  display: grid
+  grid-template-columns: 1fr 150px
+  gap: 24px
+  padding: 14px 0
+  border-top: 1px solid color-rule-soft
+  align-items: baseline
+
+a.about-talk:hover
+  opacity: 0.6
+
+.about-talk-title
+  font-family: font-display
+  font-size: 20px
+  letter-spacing: -0.015em
+  color: color-ink
+  text-wrap: pretty
+
+.about-talk-where
+  font-family: font-mono
+  font-size: 11.5px
+  color: color-faint
+  text-align: right
