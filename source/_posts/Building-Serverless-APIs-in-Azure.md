@@ -86,8 +86,8 @@ This consumption tier is now in private preview, hopefully it will be in public 
 * How to configure an API management instance via ARM and Azure DevOps
 * How to add Azure Functions to API management via Azure DevOps.
 * Building REST API's on Azure Functions. Including features like:
- - Dependency injection
- - Response caching
- - Authentication
+  - Dependency injection
+  - Response caching
+  - Authentication
 
 Stay tuned and happy coding.

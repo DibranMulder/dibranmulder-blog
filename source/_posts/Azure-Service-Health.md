@@ -106,5 +106,4 @@ Considerations:
 Based on our configured alert, it's now possible to create additional alerts, and use the existing configuration as an template. With the Azure resource explorer, we can navigate to our subscription, select the Operation privder 'Microsoft.Insights' and view our template and re-use this. It's also possible to use the Azure Template feature, and deploy directly from within Azure, an example of such a template can be found here: Service Health Template.
 
 
-** This blog is written by: ** <script src="//platform.linkedin.com/in.js" type="text/javascript"></script>
-<script type="IN/MemberProfile" data-id="https://www.linkedin.com/in/sandernefs/" data-format="inline" data-related="false"></script>
+**This blog is written by:** [Sander Nefs](https://www.linkedin.com/in/sandernefs/)
