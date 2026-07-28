@@ -16,6 +16,13 @@ On 5 February 2026, SemiAnalysis opened a research note with a sentence that sho
 
 Read that again, because the framing matters. Not "4% of commits were AI-assisted." Not "4% of developers use AI." Four percent of all public commits on the world's largest code host, *authored* by a single product from a single vendor. One tool. One year after its research preview.
 
+<figure>
+  <img src="/images/semianalysis-claude-code-commits.png" alt="Line chart of daily Claude Code commits to public GitHub from February 2025 to February 2026, rising from near zero to 134,646 per day. Growth is slow through mid-2025, flattens around 10,000 per day over the summer, then steps sharply upward from October 2025 onward.">
+  <figcaption>Daily Claude Code commits to public GitHub, February 2025 to February 2026. The curve is flat for six months, then breaks upward in October. Chart by SemiAnalysis, from GitHub Search API data through 2 February 2026.</figcaption>
+</figure>
+
+The shape is the part worth sitting with. This is not a steady ramp that someone extrapolated too enthusiastically. It is six months of a boring, almost flat line around ten thousand commits a day, and then a near-vertical wall starting in October. Anyone who evaluated this tooling in the summer of 2025 and concluded it was a curiosity was, at that moment, correct. They were also about to be lapped.
+
 We are now in late July 2026. Roughly halfway through the window of that projection. And it is worth being honest about something: I could not find a credible, methodologically transparent update to that number. There are SEO blogs claiming Claude Code has passed 9% of global public commits this month. They cite nobody. Discard them. The 4% figure stands as the last serious measurement I can point at, and even that comes from a firm modelling the number rather than GitHub publishing it.
 
 Which is itself part of the story. The single most consequential shift in how software gets made is happening faster than our ability to measure it.

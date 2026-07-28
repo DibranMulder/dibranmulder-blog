@@ -8,7 +8,7 @@
 
     <div class="about-hero-aside">
       <% if (page.portrait){ %>
-        <img class="about-portrait" src="<%- url_for(page.portrait) %>" alt="<%= page.title || config.author %>">
+        <img class="about-portrait" src="<%- url_for(page.portrait) %>" alt="<%= theme.author && theme.author.name || config.author %>">
       <% } else { %>
         <div class="about-portrait about-portrait-placeholder" aria-hidden="true"></div>
       <% } %>

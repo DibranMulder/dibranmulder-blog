@@ -2,6 +2,7 @@
 title: About
 layout: about
 headline: I build identity infrastructure that doesn't watch you.
+portrait: /images/dibran.png
 comments: false
 links:
   - label: github.com/DibranMulder
