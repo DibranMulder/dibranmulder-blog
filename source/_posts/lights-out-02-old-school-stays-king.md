@@ -101,6 +101,42 @@ The way I picture it: an agent is a steel ball in a pinball machine.
 
 You do not steer a pinball. You cannot. What you do is build a table where the bumpers, flippers and rails are placed so that a ball moving fast in roughly the right direction ends up somewhere near where you wanted it. The ball has energy and no judgement. The table has judgement and no energy. Between them you get a decent outcome, repeatedly, without anyone steering anything.
 
+<figure style="max-width:760px;margin:2rem auto;">
+<svg viewBox="0 0 820 560" role="img" aria-labelledby="pinTitle pinDesc" style="width:100%;height:auto;display:block;font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;">
+<title id="pinTitle">Two pinball tables: with guardrails the ball reaches shippable output, without them it drains.</title>
+<desc id="pinDesc">The agent is a steel ball. On the left table, bumpers labelled linting, type system, tests, infrastructure as code, feature flags and CI deflect the ball down to a target marked shippable output. On the right table there are no bumpers, so the same ball falls straight into the drain, labelled plausible garbage.</desc>
+<defs>
+<linearGradient id="pinTable" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#17203a"/><stop offset="1" stop-color="#0d1428"/></linearGradient>
+<radialGradient id="pinBall" cx="0.35" cy="0.3" r="0.75"><stop offset="0" stop-color="#f7f9ff"/><stop offset="0.5" stop-color="#c3ccdd"/><stop offset="1" stop-color="#8b97ae"/></radialGradient>
+<filter id="pinGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect x="30" y="30" width="360" height="500" rx="34" fill="url(#pinTable)" stroke="#33406a" stroke-width="3"/>
+<rect x="430" y="30" width="360" height="500" rx="34" fill="url(#pinTable)" stroke="#33406a" stroke-width="3"/>
+<text x="210" y="62" text-anchor="middle" fill="#e6ebf5" font-size="16" font-weight="700" letter-spacing="0.5">WITH guardrails</text>
+<text x="610" y="62" text-anchor="middle" fill="#e6ebf5" font-size="16" font-weight="700" letter-spacing="0.5">WITHOUT guardrails</text>
+<polyline points="88,92 108,190 300,170 200,262 300,330 208,404 210,470" fill="none" stroke="#ffd24d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+<g stroke="#0d1428" stroke-width="1.5" font-size="11" font-weight="700" text-anchor="middle">
+<circle cx="108" cy="190" r="24" fill="#f4a259"/><text x="108" y="194" fill="#0d1428">LINT</text>
+<circle cx="300" cy="168" r="24" fill="#56c4c0"/><text x="300" y="172" fill="#0d1428">TYPES</text>
+<circle cx="200" cy="262" r="33" fill="#7ee787" filter="url(#pinGlow)"/><text x="200" y="266" fill="#0d1428">TESTS</text>
+<circle cx="115" cy="340" r="22" fill="#b18bff"/><text x="115" y="344" fill="#0d1428">IaC</text>
+<circle cx="300" cy="330" r="22" fill="#6ea8fe"/><text x="300" y="334" fill="#0d1428">FLAGS</text>
+<circle cx="208" cy="404" r="24" fill="#ff8fab"/><text x="208" y="408" fill="#0d1428">CI</text>
+</g>
+<line x1="150" y1="452" x2="206" y2="476" stroke="#c9d3e8" stroke-width="9" stroke-linecap="round"/>
+<line x1="270" y1="452" x2="214" y2="476" stroke="#c9d3e8" stroke-width="9" stroke-linecap="round"/>
+<rect x="172" y="470" width="76" height="24" rx="7" fill="#123a1f" stroke="#4ade80" stroke-width="2" filter="url(#pinGlow)"/>
+<text x="210" y="486" text-anchor="middle" fill="#d6ffe0" font-size="11" font-weight="700">SHIPPABLE</text>
+<line x1="610" y1="92" x2="610" y2="470" stroke="#ffd24d" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" opacity="0.55"/>
+<text x="610" y="285" text-anchor="middle" fill="#6b7796" font-size="13" opacity="0.6">no bumpers</text>
+<rect x="572" y="470" width="76" height="24" rx="7" fill="#3a0f16" stroke="#ff6b6b" stroke-width="2"/>
+<text x="610" y="486" text-anchor="middle" fill="#ffd0d0" font-size="11" font-weight="700">DRAIN</text>
+<g filter="url(#pinGlow)"><circle cx="88" cy="92" r="10" fill="url(#pinBall)"/><circle cx="610" cy="92" r="10" fill="url(#pinBall)"/></g>
+<text x="410" y="548" text-anchor="middle" fill="#8a95ab" font-size="12">The ball has energy and no judgement. The table has judgement and no energy.</text>
+</svg>
+<figcaption style="text-align:center;font-size:0.85rem;color:#6b7280;margin-top:0.5rem;">Same ball, same speed. The only difference is whether anyone built the table. LINT = linting and formatting, TYPES = type system, TESTS = automated tests, IaC = infrastructure as code, FLAGS = feature flags, CI = continuous integration.</figcaption>
+</figure>
+
 Your guardrails are the table:
 
 **Linting and formatting** settle a thousand style arguments before the agent can have them, silently, on every keystroke.
