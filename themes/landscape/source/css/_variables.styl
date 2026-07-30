@@ -1,63 +1,72 @@
+// Light editorial — design tokens
+//
+// Paper-warm neutrals with a single ink-blue accent. Code blocks are the one
+// dark surface in the system, so they read as inserted artefacts rather than
+// as part of the page.
+
 // Config
 support-for-ie = false
 vendor-prefixes = webkit moz ms official
 
-// Colors
-color-default = #555
-color-grey = #999
-color-border = #ddd
-color-link = #258fb8
-color-background = #eee
-color-sidebar-text = #777
-color-widget-background = #ddd
-color-widget-border = #ccc
-color-footer-background = #262a30
-color-mobile-nav-background = #191919
-color-twitter = #00aced
-color-facebook = #3b5998
-color-pinterest = #cb2027
-color-google = #dd4b39
+// Surfaces
+color-paper = #faf8f4
+color-panel = #f2eee5
+color-panel-hatch = #eae5d9
+
+// Ink
+color-ink = #17150f
+color-body = #22201b
+color-body-soft = #3a3630
+color-muted = #57524a
+color-muted-2 = #6d675c
+color-faint = #8a8375
+color-faintest = #a09884
+
+// Rules
+color-rule = #e4ded2
+color-rule-strong = #e0d9cb
+color-rule-soft = #ece7dc
+
+// Accent
+color-accent = #1a4d8f
+color-accent-rule = #b9cbe0
+
+// Code surface
+color-code-bg = #12161c
+color-code-border = #1d2530
+color-code-rule = #232c38
+color-code-text = #c3ccd8
+color-code-meta = #8b97a8
+color-code-key = #7ddcf5
+color-code-string = #9ecb8a
+color-code-comment = #6b7787
+color-code-number = #d8a86a
 
 // Fonts
-font-sans = -apple-system, BlinkMacSystemFont,
-    "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
-    "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif
-font-serif = Georgia, "Times New Roman", serif
-font-mono = "Source Code Pro", Consolas, Monaco, Menlo, Consolas, monospace
-font-icon = FontAwesome
-font-icon-path = "fonts/fontawesome-webfont"
-font-icon-version = "4.0.3"
-font-size = 14px
-line-height = 1.6em
-line-height-title = 1.1em
+font-display = "Newsreader", Georgia, "Times New Roman", serif
+font-sans = "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif
+font-mono = "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace
 
-// Header
-logo-size = 40px
-subtitle-size = 16px
-banner-height = 300px
-banner-url = "images/banner.jpg"
-
-sidebar = hexo-config("sidebar")
+font-size = 19px
+line-height = 1.72
+line-height-title = 1.06
 
 // Layout
-block-margin = 50px
-article-padding = 20px
-mobile-nav-width = 280px
-main-column = 9
-sidebar-column = 3
+site-width = 1128px
+measure = 68ch
+toc-width = 190px
+rail-width = 210px
+grid-gap = 48px
+gutter-width = 24px
 
-if sidebar and sidebar isnt bottom
-  _sidebar-column = sidebar-column
-else
-  _sidebar-column = 0
+// Breakpoints
+// full   — three-column reading view (toc | article | author rail)
+// mid    — two columns, author rail drops under the article
+// narrow — single column, toc becomes a collapsible summary
+bp-full = 1180px
+bp-mid = 900px
+bp-narrow = 640px
 
-// Grids
-column-width = 80px
-gutter-width = 20px
-columns = main-column + _sidebar-column
-
-// Media queries
-mq-mobile = "screen and (max-width: 479px)"
-mq-tablet = "screen and (min-width: 480px) and (max-width: 767px)"
-mq-normal = "screen and (min-width: 768px)"
+mq-mid = "screen and (max-width: " + bp-full + ")"
+mq-narrow = "screen and (max-width: " + bp-mid + ")"
+mq-mobile = "screen and (max-width: " + bp-narrow + ")"

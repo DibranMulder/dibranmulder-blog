@@ -23,157 +23,157 @@ So how does this look like in code. There are 2 parts that I want to share with 
 
 ### Verifying a JWT Bearer token
 - Perform a Http REST call from Angular.
-```typescript
-public async authenticate(username: string, password: string) {
-    const authResponse = await this.http.post(environment.wordpressBackend + this.jwtEndpoint, { username, password }).toPromise();
-    localStorage.setItem('token', (authResponse as AuthResponse).token);
-}
+  ```typescript
+  public async authenticate(username: string, password: string) {
+      const authResponse = await this.http.post(environment.wordpressBackend + this.jwtEndpoint, { username, password }).toPromise();
+      localStorage.setItem('token', (authResponse as AuthResponse).token);
+  }
 
-public async getSubscription() {
-    const res = await this.http.get(environment.tradersmateBackend + 'api/subscriptions').toPromise();
-    localStorage.setItem('subscription', res as string);
-}
-```
+  public async getSubscription() {
+      const res = await this.http.get(environment.tradersmateBackend + 'api/subscriptions').toPromise();
+      localStorage.setItem('subscription', res as string);
+  }
+  ```
 - Wordpress anwers with a JWT Bearer token and some meta information.
-```json
-{
-    "token": "secrettokenwillbehere",
-    "user_email": "dibran@example.com",
-    "user_nicename": "dibranmulder",
-    "user_display_name": "Dibran Mulder"
-}
-```
+  ```json
+  {
+      "token": "secrettokenwillbehere",
+      "user_email": "dibran@example.com",
+      "user_nicename": "dibranmulder",
+      "user_display_name": "Dibran Mulder"
+  }
+  ```
 
 - Perform a `protected` Azure Function call, using an Angular interceptor to add the Bearer token.
-```typescript
-import { Injectable } from '@angular/core';
-import {
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpInterceptor
-} from '@angular/common/http';
-import { AuthService } from './auth.service';
-import { Observable } from 'rxjs';
+  ```typescript
+  import { Injectable } from '@angular/core';
+  import {
+    HttpRequest,
+    HttpHandler,
+    HttpEvent,
+    HttpInterceptor
+  } from '@angular/common/http';
+  import { AuthService } from './auth.service';
+  import { Observable } from 'rxjs';
 
-@Injectable()
-export class TokenInterceptor implements HttpInterceptor {
-  constructor(public auth: AuthService) {
-  }
-
-  intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.auth.getToken();
-    if (token) {
-      request = request.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+  @Injectable()
+  export class TokenInterceptor implements HttpInterceptor {
+    constructor(public auth: AuthService) {
     }
 
-    return next.handle(request);
+    intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+      const token = this.auth.getToken();
+      if (token) {
+        request = request.clone({
+          setHeaders: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      }
+
+      return next.handle(request);
+    }
   }
-}
-```
+  ```
 
 - A backend Azure Function checks the incoming Http Request and validates the Bearer token. 
 - Don't forget to respond with a 401 status code when the token is invalid.
 
-```csharp
-[FunctionName("SomeGet")]
-public static async Task<HttpResponseMessage> GetSome(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "some")] HttpRequestMessage req,
-    [Inject] IValidateJwt validateJwt,
-    ILogger log)
-{
-    try
-    {
-        log.LogInformation("Product add called");
+  ```csharp
+  [FunctionName("SomeGet")]
+  public static async Task<HttpResponseMessage> GetSome(
+      [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "some")] HttpRequestMessage req,
+      [Inject] IValidateJwt validateJwt,
+      ILogger log)
+  {
+      try
+      {
+          log.LogInformation("Product add called");
 
-        // Throws an UnAuthorizedException exception when the Bearer token can't be validated.
-        int userId = validateJwt.ValidateToken(req);
+          // Throws an UnAuthorizedException exception when the Bearer token can't be validated.
+          int userId = validateJwt.ValidateToken(req);
 
-        // Do some business logic here.
-        var results = ...
+          // Do some business logic here.
+          var results = ...
 
-        return req.CreateResponse(HttpStatusCode.OK, results);
-    }
-    catch (UnAuthorizedException e)
-    {
-        log.LogError(e.Message, e);
-        return req.CreateResponse(HttpStatusCode.Unauthorized);
-    }
-    catch (Exception e)
-    {
-        log.LogError(e.Message, e);
-        return req.CreateErrorResponse(HttpStatusCode.BadRequest, e);
-    }
-}
-```
+          return req.CreateResponse(HttpStatusCode.OK, results);
+      }
+      catch (UnAuthorizedException e)
+      {
+          log.LogError(e.Message, e);
+          return req.CreateResponse(HttpStatusCode.Unauthorized);
+      }
+      catch (Exception e)
+      {
+          log.LogError(e.Message, e);
+          return req.CreateErrorResponse(HttpStatusCode.BadRequest, e);
+      }
+  }
+  ```
 
 - Verify the Bearer token inside your Azure Functions.
 - Inject the JWT Auth Secret Key into the constructor.
 
-```csharp
-public class ValidateJwt : IValidateJwt
-{
-    private const string dataClaimType = "data";
-    private readonly TokenValidationParameters tokenValidationParameters;
+  ```csharp
+  public class ValidateJwt : IValidateJwt
+  {
+      private const string dataClaimType = "data";
+      private readonly TokenValidationParameters tokenValidationParameters;
 
-    public ValidateJwt(string secretKey)
-    {
-        tokenValidationParameters = new TokenValidationParameters
-        {
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = false,
-            ValidateAudience = false
-        };
-    }
+      public ValidateJwt(string secretKey)
+      {
+          tokenValidationParameters = new TokenValidationParameters
+          {
+              IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)),
+              ValidateIssuerSigningKey = true,
+              ValidateIssuer = false,
+              ValidateAudience = false
+          };
+      }
 
-    public int ValidateToken(HttpRequestMessage httpRequest)
-    {
-        try
-        {
-            // We need bearer authentication.
-            if (httpRequest.Headers.Authorization.Scheme != "Bearer")
-            {
-                throw new UnAuthorizedException();
-            }
+      public int ValidateToken(HttpRequestMessage httpRequest)
+      {
+          try
+          {
+              // We need bearer authentication.
+              if (httpRequest.Headers.Authorization.Scheme != "Bearer")
+              {
+                  throw new UnAuthorizedException();
+              }
 
-            // Get the token.
-            string authToken = httpRequest.Headers.Authorization.Parameter;
-            if (string.IsNullOrEmpty(authToken))
-            {
-                throw new UnAuthorizedException();
-            }
+              // Get the token.
+              string authToken = httpRequest.Headers.Authorization.Parameter;
+              if (string.IsNullOrEmpty(authToken))
+              {
+                  throw new UnAuthorizedException();
+              }
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            // Validate it.
-            ClaimsPrincipal principal = tokenHandler.ValidateToken(authToken, tokenValidationParameters, out SecurityToken validatedToken);
-            if (principal.Identity.IsAuthenticated)
-            {
-                // Check for a data claim.
-                if (principal.HasClaim(x => x.Type == dataClaimType))
-                {
-                    Claim dataClaim = principal.Claims.FirstOrDefault(x => x.Type == dataClaimType);
-                    var userObj = JsonConvert.DeserializeObject<DataClaim>(dataClaim.Value);
-                    // With a user object.
-                    if (userObj != null && userObj.User != null)
-                    {
-                        return userObj.User.Id;
-                    }
-                }
-            }
-        }
-        catch
-        {
-            // Do nothing
-        }
-        throw new UnAuthorizedException();
-    }
-}
-```
+              var tokenHandler = new JwtSecurityTokenHandler();
+              // Validate it.
+              ClaimsPrincipal principal = tokenHandler.ValidateToken(authToken, tokenValidationParameters, out SecurityToken validatedToken);
+              if (principal.Identity.IsAuthenticated)
+              {
+                  // Check for a data claim.
+                  if (principal.HasClaim(x => x.Type == dataClaimType))
+                  {
+                      Claim dataClaim = principal.Claims.FirstOrDefault(x => x.Type == dataClaimType);
+                      var userObj = JsonConvert.DeserializeObject<DataClaim>(dataClaim.Value);
+                      // With a user object.
+                      if (userObj != null && userObj.User != null)
+                      {
+                          return userObj.User.Id;
+                      }
+                  }
+              }
+          }
+          catch
+          {
+              // Do nothing
+          }
+          throw new UnAuthorizedException();
+      }
+  }
+  ```
 
 ## Calling Woocommerce with OAuth 1.0
 To interact with the Woocommerce API we need to implement the OAuth 1 flow. Its not used that much so you won't find a lot of C# examples online. Here's mine.

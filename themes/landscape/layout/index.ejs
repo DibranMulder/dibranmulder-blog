@@ -1,1 +1,55 @@
-<%- partial('_partial/archive', {pagination: 2, index: true}) %>
+<%
+var posts = page.posts.toArray();
+var isFirstPage = !page.current || page.current === 1;
+var latest = isFirstPage ? posts[0] : null;
+%>
+<div class="page page-home">
+
+  <% if (isFirstPage){ %>
+    <section class="home-hero">
+      <div class="home-hero-lead">
+        <h1><%= (theme.hero && theme.hero.title) || config.title %></h1>
+        <% if (theme.hero && theme.hero.lede){ %>
+          <p class="lede"><%= theme.hero.lede %></p>
+        <% } %>
+        <% if (theme.social){ %>
+          <div class="link-row">
+            <% for (var label in theme.social){ %>
+              <a href="<%- theme.social[label] %>"><%= label %></a>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+
+      <% if (latest){ %>
+        <div class="home-hero-latest">
+          <div class="eyebrow">Latest</div>
+          <a class="home-hero-latest-title" href="<%- url_for(latest.path) %>"><%= latest.title %></a>
+          <div class="meta"><%= date(latest.date, 'D MMM YYYY') %> · <%= reading_time(latest.content) %> min</div>
+        </div>
+      <% } %>
+    </section>
+  <% } %>
+
+  <section class="post-list-section">
+    <div class="eyebrow"><%= isFirstPage ? 'Selected writing' : 'More writing' %></div>
+    <div class="post-list">
+      <% posts.forEach(function(post){ %>
+        <a class="post-list-item" href="<%- url_for(post.path) %>">
+          <span class="post-list-body">
+            <span class="post-list-title"><%= post.title || '(no title)' %></span>
+            <% if (theme.show_excerpts){ %>
+              <span class="post-list-excerpt"><%= post_summary(post) %></span>
+            <% } %>
+          </span>
+          <span class="post-list-meta">
+            <span><%= date(post.date, 'D MMM YYYY') %></span>
+            <span><%= reading_time(post.content) %> min read</span>
+          </span>
+        </a>
+      <% }) %>
+    </div>
+  </section>
+
+  <%- partial('_partial/paginator') %>
+</div>

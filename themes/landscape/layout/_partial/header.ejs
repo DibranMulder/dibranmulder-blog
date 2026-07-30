@@ -1,32 +1,25 @@
+<%
+var currentPath = '/' + (page.path || '');
+
+// A menu entry is current when the page lives under it. "/" is the writing
+// index, so posts count as current there too — but the archive, category and
+// tag generators also set __index, hence the explicit exclusions.
+function isCurrent(target){
+  var base = String(target).replace(/index\.html$/, '').replace(/\/$/, '');
+  if (!base) return is_post() || (is_home() && !is_archive() && !is_category() && !is_tag());
+  return currentPath.indexOf(base) === 0;
+}
+%>
 <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="<%- url_for() %>" id="logo"><%= config.title %></a>
-      </h1>
-      <% if (theme.subtitle){ %>
-        <h2 id="subtitle-wrap">
-          <a href="<%- url_for() %>" id="subtitle"><%= theme.subtitle %></a>
-        </h2>
+  <div class="header-inner">
+    <a class="wordmark" href="<%- url_for('/') %>"><%= theme.wordmark || config.author || config.title %></a>
+    <nav class="site-nav" aria-label="Main">
+      <% for (var label in theme.menu){ %>
+        <a href="<%- url_for(theme.menu[label]) %>"<% if (isCurrent(theme.menu[label])){ %> class="is-current" aria-current="page"<% } %>><%= label %></a>
       <% } %>
-    </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
-        <% for (var i in theme.menu){ %>
-          <a class="main-nav-link" href="<%- url_for(theme.menu[i]) %>"><%= i %></a>
-        <% } %>
-      </nav>
-      <nav id="sub-nav">
-        <% if (theme.rss){ %>
-          <a id="nav-rss-link" class="nav-icon" href="<%- url_for(theme.rss) %>" title="<%= __('rss_feed') %>"></a>
-        <% } %>
-        <a id="nav-search-btn" class="nav-icon" title="<%= __('search') %>"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <%- search_form({button: '&#xF002;'}) %>
-      </div>
-    </div>
+      <% if (theme.rss){ %>
+        <a href="<%- url_for(theme.rss) %>">RSS</a>
+      <% } %>
+    </nav>
   </div>
 </header>

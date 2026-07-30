@@ -1,0 +1,67 @@
+// Archive, category and tag pages: a year-grouped index of dated rows.
+
+.page-index, .page-single
+  max-width: 760px
+  padding-left: gutter-width
+  padding-right: gutter-width
+
+.index-head
+  display: flex
+  flex-direction: column
+  gap: 12px
+  padding: 56px 0 34px
+
+  h1
+    font-family: font-display
+    font-size: 42px
+    line-height: 1.1
+    letter-spacing: -0.03em
+    font-weight: 500
+    color: color-ink
+    text-wrap: balance
+
+.index-blurb
+  font-size: 17px
+  line-height: 1.65
+  color: color-muted
+  max-width: 54ch
+  text-wrap: pretty
+
+.index-year
+  display: flex
+  flex-direction: column
+  padding-bottom: 34px
+
+.index-year-label
+  font-family: font-mono
+  font-size: 11.5px
+  letter-spacing: 0.16em
+  color: color-faintest
+  padding-bottom: 6px
+
+.index-row
+  display: grid
+  grid-template-columns: 64px 1fr
+  gap: 20px
+  align-items: baseline
+  padding: 14px 0
+  border-top: 1px solid color-rule-soft
+
+  &:hover
+    opacity: 0.6
+
+.index-row-date
+  font-family: font-mono
+  font-size: 11.5px
+  color: color-faintest
+
+.index-row-title
+  font-family: font-display
+  font-size: 21px
+  line-height: 1.32
+  letter-spacing: -0.015em
+  color: color-ink
+  text-wrap: pretty
+
+.page-single
+  padding-bottom: 40px

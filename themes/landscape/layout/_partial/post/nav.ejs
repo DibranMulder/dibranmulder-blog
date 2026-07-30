@@ -1,21 +1,23 @@
-<% if (post.prev || post.next){ %>
-<nav id="article-nav">
-  <% if (post.prev){ %>
-    <a href="<%- url_for(post.prev.path) %>" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption"><%= __('newer') %></strong>
-      <div class="article-nav-title">
-        <% if (post.prev.title){ %>
-          <%= post.prev.title %>
-        <% } else { %>
-          (no title)
-        <% } %>
-      </div>
+<%
+// Hexo's post.next is the older post and post.prev the newer one; the reading
+// view reads left-to-right in publication order.
+var older = post.next;
+var newer = post.prev;
+%>
+<% if (older || newer){ %>
+<nav class="post-nav">
+  <% if (older){ %>
+    <a class="post-nav-link post-nav-prev" href="<%- url_for(older.path) %>">
+      <span class="eyebrow">← Previous</span>
+      <span class="post-nav-title"><%= older.title || '(no title)' %></span>
     </a>
+  <% } else { %>
+    <span></span>
   <% } %>
-  <% if (post.next){ %>
-    <a href="<%- url_for(post.next.path) %>" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption"><%= __('older') %></strong>
-      <div class="article-nav-title"><%= post.next.title %></div>
+  <% if (newer){ %>
+    <a class="post-nav-link post-nav-next" href="<%- url_for(newer.path) %>">
+      <span class="eyebrow">Next →</span>
+      <span class="post-nav-title"><%= newer.title || '(no title)' %></span>
     </a>
   <% } %>
 </nav>

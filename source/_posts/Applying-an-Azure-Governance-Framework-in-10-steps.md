@@ -69,11 +69,11 @@ Applying the same naming conventions throughout the whole organization can be ve
 2. Use 3 or 4 letter abbreviations consistently throughout all properties.
 3. Use the resource abbreviations [proposed by Microsoft](https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/naming-and-tagging#recommended-resource-type-prefixes).
 4. Add a suffix because it may occur that a resource name is locked for a significant amount of time when its deleted.
- - This happened to me once when I tried to recreate an Azure Service Bus. The name was locked for 2 days.
+   - This happened to me once when I tried to recreate an Azure Service Bus. The name was locked for 2 days.
 5. Use all lower cases characters, [there are some restrictions](https://docs.microsoft.com/en-us/azure/architecture/best-practices/resource-naming).
 6. Don't use special characters, only alphanumeric characters. Hyphen (-) excluded.
 7. Try to be unique
- - Some resource names, such as PaaS services with public endpoints or virtual machine DNS labels, have global scopes, which means that they must be unique across the entire Azure platform.
+   - Some resource names, such as PaaS services with public endpoints or virtual machine DNS labels, have global scopes, which means that they must be unique across the entire Azure platform.
 
 # 3. Take precautions with Blueprints / Policies
 <figure><img src="/images/governance/azure-gov.png" style="width:600px" /><figcaption style="font-style: italic; text-align: center;">[Azure Governance Architecture](https://www.microsoft.com/en-us/us-partner-blog/2019/07/24/azure-governance)</figcaption></figure>

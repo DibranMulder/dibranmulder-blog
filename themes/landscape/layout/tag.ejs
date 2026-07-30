@@ -1,1 +1,4 @@
-<%- partial('_partial/archive', {pagination: config.tag, index: true}) %>
+<%- partial('_partial/post-index', {
+  heading: 'Tagged “' + page.tag + '”',
+  blurb: page.posts.length + (page.posts.length === 1 ? ' post' : ' posts') + ', newest first.'
+}) %>

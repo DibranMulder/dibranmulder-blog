@@ -1,0 +1,83 @@
+<div class="page page-about">
+
+  <section class="about-hero">
+    <div class="about-hero-lead">
+      <% if (page.headline){ %><h1><%= page.headline %></h1><% } %>
+      <div class="prose about-intro"><%- page.content %></div>
+    </div>
+
+    <div class="about-hero-aside">
+      <% if (page.portrait){ %>
+        <img class="about-portrait" src="<%- url_for(page.portrait) %>" alt="<%= theme.author && theme.author.name || config.author %>">
+      <% } else { %>
+        <div class="about-portrait about-portrait-placeholder" aria-hidden="true"></div>
+      <% } %>
+      <% if (page.links && page.links.length){ %>
+        <div class="link-column">
+          <% page.links.forEach(function(link){ %>
+            <a href="<%- link.url %>"><%= link.label %></a>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+  </section>
+
+  <% if (page.topics && page.topics.length){ %>
+    <section class="about-block">
+      <div class="eyebrow">What I write about</div>
+      <div class="about-topics">
+        <% page.topics.forEach(function(topic){ %>
+          <div class="about-topic">
+            <h2><%= topic.title %></h2>
+            <p><%= topic.body %></p>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+
+  <% if (page.track_record && page.track_record.length){ %>
+    <section class="about-block about-block-split">
+      <div class="eyebrow">Track record</div>
+      <div class="about-rows">
+        <% page.track_record.forEach(function(entry){ %>
+          <div class="about-row">
+            <span class="about-row-when"><%= entry.when %></span>
+            <span class="about-row-body">
+              <span class="about-row-role"><%= entry.role %></span>
+              <% if (entry.note){ %><span class="about-row-note"><%= entry.note %></span><% } %>
+            </span>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+
+  <% if (page.speaking_intro || (page.talks && page.talks.length)){ %>
+    <section class="about-block about-block-split">
+      <div class="eyebrow">Speaking</div>
+      <div class="about-speaking">
+        <% if (page.speaking_intro){ %>
+          <p class="about-speaking-intro"><%= page.speaking_intro %></p>
+        <% } %>
+        <% if (page.talks && page.talks.length){ %>
+          <div class="about-talks">
+            <% page.talks.forEach(function(talk){ %>
+              <% if (talk.url){ %>
+                <a class="about-talk" href="<%- talk.url %>">
+                  <span class="about-talk-title"><%= talk.title %></span>
+                  <span class="about-talk-where"><%= talk.where %></span>
+                </a>
+              <% } else { %>
+                <div class="about-talk">
+                  <span class="about-talk-title"><%= talk.title %></span>
+                  <span class="about-talk-where"><%= talk.where %></span>
+                </div>
+              <% } %>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    </section>
+  <% } %>
+</div>
