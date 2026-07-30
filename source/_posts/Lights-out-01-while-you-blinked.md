@@ -10,7 +10,7 @@ tags:
 ---
 ## While You Blinked
 
-On 5 February 2026, SemiAnalysis opened a research note with a sentence that should have rattled every engineering manager in Europe:
+On 5 February 2026, [SemiAnalysis opened a research note](https://newsletter.semianalysis.com/p/claude-code-is-the-inflection-point) with a sentence that should have rattled every engineering manager in Europe:
 
 > "4% of GitHub public commits are being authored by Claude Code right now. At the current trajectory, we believe that Claude Code will be 20%+ of all daily commits by the end of 2026. While you blinked, AI consumed all of software development."
 
@@ -49,7 +49,7 @@ When the authors of your runtime, your framework, and your tooling all independe
 
 Here is the number from all this research that I find most actionable, and it is not the 4%.
 
-The Stack Overflow 2025 Developer Survey found **84% of developers using AI** in some form, and only **31% using coding agents**.
+The [Stack Overflow 2025 Developer Survey](https://survey.stackoverflow.co/2025) found **84% of developers using AI** in some form, and only **31% using coding agents**.
 
 Eighty-four versus thirty-one. That gap is the entire competitive landscape of the next eighteen months.
 
@@ -57,27 +57,27 @@ Because those are not two points on the same curve. Autocomplete and agentic del
 
 Most organisations I talk to think they are in the second group because they bought licences. They are in the first group. Buying Copilot seats is not agentic adoption, any more than buying Jira made anyone agile.
 
-And the enterprise money has already moved. Accenture signed a partnership with Anthropic, running over several years, to train **30,000 professionals** on Claude. At the time of announcement it was the largest Claude Code deployment to date, and it aimed squarely at financial services, life sciences, healthcare, and the public sector. Those are the regulated, conservative industries that resist change. They are not waiting for your architecture board to finish deliberating.
+And the enterprise money has already moved. [Accenture signed a partnership with Anthropic](https://newsroom.accenture.com/news/2025/accenture-and-anthropic-launch-multi-year-partnership-to-drive-enterprise-ai-innovation-and-value-across-industries), running over several years, to train **30,000 professionals** on Claude. At the time of announcement it was the largest Claude Code deployment to date, and it aimed squarely at financial services, life sciences, healthcare, and the public sector. Those are the regulated, conservative industries that resist change. They are not waiting for your architecture board to finish deliberating.
 
 ## The Torvalds arc
 
 If you want a single narrative that captures how completely the ground has shifted in twenty months, follow Linus Torvalds.
 
-**October 2024.** In an interview at the time of Open Source Summit Europe, he calls the AI industry "90% marketing and 10% reality" and says his approach is to "basically ignore it." He adds: "In five years, things will change, and at that point we'll see what AI is getting used every day for real workloads."
+**October 2024.** In an [interview at the time of Open Source Summit Europe](https://tfir.io/linus-torvalds-on-the-kernel-genai-evs-programming-languages-and-more/), he calls the AI industry "90% marketing and 10% reality" and says his approach is to "basically ignore it." He adds: "In five years, things will change, and at that point we'll see what AI is getting used every day for real workloads."
 
 He gave himself five years. It took roughly eighteen months.
 
-**November 2025.** At Open Source Summit Korea he is "fairly positive" about vibe coding as a way for people to "get computers to do something that maybe they couldn't do otherwise", but warns it "may be a horrible, horrible idea from a maintenance standpoint." He is still not using AI assistance for his own coding. He complains about maintainers drowning in "bugs and security notices that are… made up by people who misuse AI."
+**November 2025.** [At Open Source Summit Korea](https://www.theregister.com/2025/11/18/linus_torvalds_vibe_coding/) he is "fairly positive" about vibe coding as a way for people to "get computers to do something that maybe they couldn't do otherwise", but warns it "may be a horrible, horrible idea from a maintenance standpoint." He is still not using AI assistance for his own coding. He complains about maintainers drowning in "bugs and security notices that are… made up by people who misuse AI."
 
-**January 2026.** He publishes AudioNoise. From his own README: "the python visualizer tool has been basically written by vibe-coding… I cut out the middle-man -- me -- and just used Google Antigravity to do the audio sample visualizer."
+**January 2026.** He publishes [AudioNoise](https://github.com/torvalds/AudioNoise). From his own README: "the python visualizer tool has been basically written by vibe-coding… I cut out the middle-man -- me -- and just used Google Antigravity to do the audio sample visualizer."
 
-**17 May 2026.** In the Linux 7.1-rc4 announcement, the pain is operational and specific: "the continued flood of AI reports has basically made the security list almost entirely unmanageable, with enormous duplication due to different people finding the same things with the same tools." His conclusion is not prohibition, it is engineering discipline: "AI tools are great, but only if they actually help, rather than cause unnecessary pain and pointless make-believe work. Feel free to use them, but use them in a way that is productive and makes for a better experience."
+**17 May 2026.** In the [Linux 7.1-rc4 announcement](https://lwn.net/Articles/1073192/), the pain is operational and specific: "the continued flood of AI reports has basically made the security list almost entirely unmanageable, with enormous duplication due to different people finding the same things with the same tools." His conclusion is not prohibition, it is engineering discipline: "AI tools are great, but only if they actually help, rather than cause unnecessary pain and pointless make-believe work. Feel free to use them, but use them in a way that is productive and makes for a better experience."
 
-**20 May 2026.** On stage with Dirk Hohndel at Open Source Summit North America, he asks the room who is using AI to code. His read: "yeah, pretty much everybody." He reports kernel commit volume up around **20% for the past two releases**, which he attributes to AI tooling lowering the barrier to writing a patch. And he delivers the best deflationary line anyone has produced on this subject: "AI will increase your productivity by a factor of 10. And I claim that compilers increase your productivity by a factor of a thousand. So AI is great, but AI is not changing programming."
+**20 May 2026.** [On stage with Dirk Hohndel at Open Source Summit North America](https://lwn.net/Articles/1073761/), he asks the room who is using AI to code. His read: "yeah, pretty much everybody." He reports kernel commit volume up around **20% for the past two releases**, which he attributes to AI tooling lowering the barrier to writing a patch. And he delivers the best deflationary line anyone has produced on this subject: "AI will increase your productivity by a factor of 10. And I claim that compilers increase your productivity by a factor of a thousand. So AI is great, but AI is not changing programming."
 
 He also identifies exactly where the real problem sits: "The conflict is not that AI is bad, the conflict is then that there are some social checkpoints and social pain points that come with this new tool." And: "I'm actually very positive about this whole thing."
 
-**Mid-July 2026.** On the linux-media list, in a thread about wiring Patchwork up to an AI review bot, someone invokes recommendations that projects should support contributors who reject LLM tooling outright. Torvalds puts his foot down:
+**Mid-July 2026.** [On the linux-media list](https://lore.kernel.org/linux-media/CAHk-=wi4zC+Ze8e+p3tMv8TtG_80KzsZ1syL9anBtmEh5Z40vg@mail.gmail.com/), in a thread about wiring Patchwork up to an AI review bot, someone invokes recommendations that projects should support contributors who reject LLM tooling outright. Torvalds puts his foot down:
 
 > "I realize that some people really dislike AI, but this is an area where I'm willing to absolutely put my foot down as the top-level maintainer. Linux is not one of those anti-AI projects, and if somebody has issues with that, they can do the open-source thing and fork it. Or just walk away."
 
@@ -87,7 +87,7 @@ And then the line that is the actual thesis of this entire blog series:
 
 > "But the solution is not to put your head in the sand and sing 'La La La, I can't hear you' at the top of your voice like some people seem to do. The solution is to make sure those LLM tools _help_ maintainers instead of just causing them pain."
 
-Be precise about what he did and did not say, because the internet was not. He did not mandate AI. He did not say maintainers must accept generated patches. The kernel's own documentation is strict in the other direction: AI agents **must not** add `Signed-off-by` tags, because only a human can certify the Developer Certificate of Origin. A human reviews, a human signs, a human takes "full responsibility for the contribution." Generated work gets "additional scrutiny in proportion to how much of it was generated," and maintainers may reject a series outright if you cannot defend it.
+Be precise about what he did and did not say, because the internet was not. He did not mandate AI. He did not say maintainers must accept generated patches. The kernel's own [documentation](https://docs.kernel.org/process/coding-assistants.html) is strict in the other direction: AI agents **must not** add `Signed-off-by` tags, because only a human can certify the Developer Certificate of Origin. A human reviews, a human signs, a human takes "full responsibility for the contribution." [Generated work](https://docs.kernel.org/process/generated-content.html) gets "additional scrutiny in proportion to how much of it was generated," and maintainers may reject a series outright if you cannot defend it.
 
 What Torvalds said is narrower and far more interesting: *you no longer get to argue about whether. You only get to argue about how.*
 
@@ -95,7 +95,7 @@ What Torvalds said is narrower and far more interesting: *you no longer get to a
 
 One more data point, because it is the one that ends the "AI code is slop" conversation in its current form.
 
-Sashiko is an agentic kernel patch reviewer, announced in March 2026 and now reviewing traffic on kernel mailing lists. Its creator, Roman Gushchin, measured it against a thousand recent upstream issues identified by `Fixes:` tags:
+[Sashiko is an agentic kernel patch reviewer](https://lwn.net/Articles/1063303/), announced in March 2026 and now reviewing traffic on kernel mailing lists. Its creator, Roman Gushchin, measured it against a thousand recent upstream issues identified by `Fixes:` tags:
 
 > "Sashiko was able to find 53% of bugs based on a completely unfiltered set of 1,000 recent upstream issues using 'Fixes:' tags. Some might say that 53% is not that impressive, but 100% of these issues were missed by human reviewers."
 
@@ -103,7 +103,7 @@ One hundred percent of them got through the most scrutinised code review process
 
 Andrew Morton's reaction was the correct engineering reaction: "Rule #1 is, surely, 'don't add bugs'. This thing finds bugs. If its hit rate is 50% then that's plenty high enough… That's a really high hit rate! How can we possibly not use this, if we care about Rule #1?"
 
-And the pushback was equally correct. Within a month Sashiko had produced over 10,000 reviews averaging some 3,500 words per patch, with a rate of false positives its own author put in the neighbourhood of 20%. Lorenzo Stoakes, on the proposal to make responses to every bot comment mandatory: "Andrew, for crying out loud. Please don't do this."
+And the pushback was equally correct. [Within a month Sashiko had produced over 10,000 reviews](https://lwn.net/Articles/1064830/) averaging some 3,500 words per patch, with a rate of false positives its own author put in the neighbourhood of 20%. Lorenzo Stoakes, on the proposal to make responses to every bot comment mandatory: "Andrew, for crying out loud. Please don't do this."
 
 Both men are right. That is the whole problem in miniature. The tool creates real value and real load, and the load lands on humans who did not choose it. Nothing in your Definition of Done, your sprint ceremony, or your team topology was designed for an actor that generates 3,500 words of plausible review commentary per patch at four in the morning.
 
