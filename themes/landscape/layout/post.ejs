@@ -1,1 +1,81 @@
-<%- partial('_partial/article', {post: page, index: false}) %>
+<%
+var post = page;
+var toc = theme.toc ? article_toc(post.content) : [];
+var words = word_count(post.content);
+var kicker = null;
+
+if (post.categories && post.categories.length){
+  kicker = post.categories.first();
+} else if (post.tags && post.tags.length){
+  kicker = post.tags.first();
+}
+%>
+<article class="page page-post" itemscope itemtype="https://schema.org/BlogPosting">
+
+  <header class="post-hero">
+    <div class="post-hero-inner">
+      <div class="post-kicker">
+        <% if (kicker){ %>
+          <a class="post-kicker-topic" href="<%- url_for(kicker.path) %>"><%= kicker.name %></a>
+          <span class="dot" aria-hidden="true"></span>
+        <% } %>
+        <time datetime="<%= date_xml(post.date) %>" itemprop="datePublished"><%= date(post.date, 'D MMMM YYYY') %></time>
+        <span class="dot" aria-hidden="true"></span>
+        <span><%= reading_time(post.content) %> min read</span>
+      </div>
+      <h1 itemprop="headline"><%= post.title %></h1>
+      <% if (post.description || post.subtitle){ %>
+        <p class="lede"><%= post.description || post.subtitle %></p>
+      <% } %>
+    </div>
+  </header>
+
+  <div class="reading-grid">
+
+    <aside class="reading-rail reading-rail-toc">
+      <% if (toc.length){ %>
+        <nav class="toc" aria-label="Contents">
+          <div class="eyebrow">Contents</div>
+          <% toc.forEach(function(entry){ %>
+            <a class="toc-link toc-level-<%= entry.level %>" href="#<%= entry.id %>"><%= entry.text %></a>
+          <% }) %>
+        </nav>
+      <% } %>
+      <div class="reading-rail-foot">
+        <div><%= group_digits(words) %> words</div>
+        <a class="share-link" data-url="<%- post.permalink %>" href="<%- post.permalink %>">Share ↗</a>
+      </div>
+    </aside>
+
+    <div class="reading-main">
+      <div class="prose article-entry" itemprop="articleBody">
+        <%- post.content %>
+      </div>
+
+      <% if (post.tags && post.tags.length){ %>
+        <div class="tag-row">
+          <% post.tags.each(function(tag){ %>
+            <a href="<%- url_for(tag.path) %>"><%= tag.name %></a>
+          <% }) %>
+        </div>
+      <% } %>
+
+      <%- partial('_partial/post/nav', {post: post}) %>
+    </div>
+
+    <aside class="reading-rail reading-rail-author">
+      <div class="eyebrow">Author</div>
+      <% if (theme.author && theme.author.avatar){ %>
+        <img class="author-avatar" src="<%- url_for(theme.author.avatar) %>" alt="<%= theme.author.name %>">
+      <% } else { %>
+        <div class="author-avatar author-avatar-placeholder" aria-hidden="true"></div>
+      <% } %>
+      <p class="author-bio">
+        <strong><%= (theme.author && theme.author.name) || config.author %></strong><% if (theme.author && theme.author.bio){ %> — <%= theme.author.bio %><% } %>
+      </p>
+      <% if (theme.author && theme.author.link){ %>
+        <a class="underlined" href="<%- url_for(theme.author.link) %>">About →</a>
+      <% } %>
+    </aside>
+  </div>
+</article>

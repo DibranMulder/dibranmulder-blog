@@ -1,0 +1,208 @@
+// Long-form body copy. Everything inside .prose comes from Markdown, so the
+// rhythm is set with margins on siblings rather than a flex gap.
+
+.prose
+  font-size: font-size
+  line-height: line-height
+  color: color-body
+
+  > * + *
+    margin-top: 24px
+
+  p
+    text-wrap: pretty
+
+  strong
+    font-weight: 600
+    color: color-ink
+
+  a
+    color: color-accent
+    border-bottom: 1px solid color-accent-rule
+
+    &:hover
+      border-bottom-color: color-accent
+
+  // Headings ----------------------------------------------------------------
+
+  h1, h2, h3, h4, h5, h6
+    font-family: font-display
+    font-weight: 500
+    letter-spacing: -0.025em
+    line-height: 1.2
+    color: color-ink
+
+  h2
+    font-size: 33px
+
+  h3
+    font-size: 25px
+    letter-spacing: -0.02em
+
+  h4, h5, h6
+    font-size: 20px
+    letter-spacing: -0.015em
+
+  > h2 + *, > h3 + *, > h4 + *
+    margin-top: 16px
+
+  > * + h2
+    margin-top: 44px
+
+  > * + h3, > * + h4
+    margin-top: 34px
+
+  .headerlink
+    float: left
+    margin-left: -0.7em
+    width: 0.7em
+    border: 0
+    opacity: 0
+    color: color-faintest
+    font-family: font-mono
+    font-size: 0.7em
+    line-height: inherit
+
+    &::before
+      content: "#"
+
+  h2:hover .headerlink, h3:hover .headerlink, h4:hover .headerlink
+    opacity: 1
+
+  // Drop cap — added by script.js only when the opening paragraph starts with
+  // a plain letter, so image-first posts are left alone.
+  p.has-dropcap::first-letter
+    font-family: font-display
+    font-weight: 500
+    float: left
+    font-size: 62px
+    line-height: 0.82
+    padding: 6px 12px 0 0
+    color: color-ink
+
+  // Lists -------------------------------------------------------------------
+
+  ul, ol
+    padding-left: 1.4em
+
+  ul
+    list-style: disc
+
+  ol
+    list-style: decimal
+
+  li
+    margin-top: 8px
+
+    &::marker
+      color: color-faintest
+
+  li > ul, li > ol
+    margin-top: 8px
+
+  // Quotes ------------------------------------------------------------------
+
+  blockquote
+    border-left: 2px solid color-ink
+    padding: 2px 0 2px 24px
+    font-family: font-display
+    font-size: 26px
+    line-height: 1.4
+    letter-spacing: -0.015em
+    color: color-ink
+
+    p + p
+      margin-top: 14px
+
+    cite, footer
+      display: block
+      margin-top: 12px
+      font-family: font-mono
+      font-size: 12px
+      font-style: normal
+      letter-spacing: 0.06em
+      color: color-faint
+
+  // Figures and images ------------------------------------------------------
+
+  img
+    border: 1px solid color-rule-strong
+    border-radius: 6px
+    background: color-panel
+
+  figure
+    display: flex
+    flex-direction: column
+    gap: 10px
+
+  figcaption, .caption
+    display: block
+    font-family: font-mono
+    font-size: 11.5px
+    line-height: 1.6
+    color: color-faint
+    margin-top: 10px
+
+  a.fancybox
+    border: 0
+    display: block
+
+    + .caption
+      margin-top: -14px
+
+  // Tables ------------------------------------------------------------------
+
+  .table-scroll
+    overflow-x: auto
+    border: 1px solid color-rule-strong
+    border-radius: 8px
+
+  table
+    width: 100%
+    border-collapse: collapse
+    font-size: 15.5px
+    color: color-body-soft
+
+  thead
+    background: color-panel
+
+  th
+    font-family: font-mono
+    font-size: 11px
+    font-weight: 500
+    letter-spacing: 0.1em
+    text-transform: uppercase
+    color: color-faint
+    text-align: left
+    padding: 11px 16px
+    border-bottom: 1px solid color-rule-strong
+
+  td
+    padding: 13px 16px
+    border-top: 1px solid color-rule-soft
+
+  tbody tr:first-child td
+    border-top: 0
+
+  // Inline code and rules ---------------------------------------------------
+
+  code
+    font-family: font-mono
+    font-size: 0.85em
+    background: color-panel
+    border: 1px solid color-rule-strong
+    border-radius: 4px
+    padding: 1px 5px
+
+  hr
+    border: 0
+    border-top: 1px solid color-rule
+    margin: 44px 0
+
+  kbd
+    font-family: font-mono
+    font-size: 0.85em
+    border: 1px solid color-rule-strong
+    border-bottom-width: 2px
+    border-radius: 4px
+    padding: 1px 6px

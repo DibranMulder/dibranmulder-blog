@@ -1,4 +1,13 @@
-var rUrl = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/;
+var rUrl = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www\.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[.\!\/\\w]*))?)/;
+
+function escapeHTML(str){
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 /**
 * Fancybox tag
@@ -17,8 +26,8 @@ hexo.extend.tag.register('fancybox', function(args){
 
   var title = args.join(' ');
 
-  return '<a class="fancybox" href="' + original + '" title="' + title + '">' +
-    '<img src="' + (thumbnail || original) + '" alt="' + title + '">'
+  return '<a class="fancybox" href="' + escapeHTML(original) + '" title="' + escapeHTML(title) + '">' +
+    '<img src="' + escapeHTML(thumbnail || original) + '" alt="' + escapeHTML(title) + '">' +
     '</a>' +
-    (title ? '<span class="caption">' + title + '</span>' : '');
+    (title ? '<span class="caption">' + escapeHTML(title) + '</span>' : '');
 });

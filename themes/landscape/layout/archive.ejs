@@ -1,1 +1,14 @@
-<%- partial('_partial/archive', {pagination: config.archive, index: true}) %>
+<%
+var heading;
+var blurb = null;
+
+if (is_month()){
+  heading = date(new Date(page.year, page.month - 1), 'MMMM YYYY');
+} else if (is_year()){
+  heading = String(page.year);
+} else {
+  heading = 'Everything, ' + site.posts.length + ' posts';
+  blurb = 'Newest first. The older entries are the Azure years and are kept as written.';
+}
+%>
+<%- partial('_partial/post-index', {heading: heading, blurb: blurb}) %>
