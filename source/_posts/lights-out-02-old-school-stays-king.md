@@ -1,6 +1,6 @@
 ---
 title: "Lights Out, part 2: old school stays king"
-date: 2026-07-28 16:17:55
+date: 2026-07-32 08:38:00
 tags:
  - AI
  - Agentic coding
