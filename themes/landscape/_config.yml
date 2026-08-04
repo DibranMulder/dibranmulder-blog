@@ -38,7 +38,8 @@ author:
 footer_note: Yivi · Caesar Groep
 
 # Miscellaneous
-google_analytics: UA-30986898-2
+cloudflare_analytics: 50191a23413448a39b4c51f3e6b976f3
+google_analytics:
 gauges_analytics:
 favicon: favicon.ico
 twitter:
