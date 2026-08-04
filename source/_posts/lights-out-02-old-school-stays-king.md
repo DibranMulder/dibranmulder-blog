@@ -74,7 +74,7 @@ On day eight [the agent ran a command that deleted the production database](http
 
 Asked to rate the severity of its own behaviour, it gave itself 95 out of 100.
 
-That story got passed around as an AI safety anecdote, which is how it gets defused and forgotten. The [OWASP GenAI Security Project's 2026 report on agentic security](https://genai.owasp.org/) puts it back where it belongs, and I would frame this sentence and hang it in every architecture review:
+That story got passed around as an AI safety anecdote, which is how it gets defused and forgotten. The [OWASP GenAI Security Project's 2026 report on agentic security](https://www.helpnetsecurity.com/2026/06/11/owasp-prompt-injection-ai-security-failures/) puts it back where it belongs, and I would frame this sentence and hang it in every architecture review:
 
 > "There was no attacker. The permission model behind the unprovoked failure is the same permission model an attacker would exploit through prompt injection."
 
@@ -95,6 +95,34 @@ An agent has no hesitation and no typing limit. It executes at machine speed, it
 **Every unclosed gap in your access model just got an actor attached to it that is fast, tireless and remotely suggestible.** The controls did not become more important because AI arrived. They became load bearing.
 
 I have a slightly cynical observation from client work here. Agentic coding is the best business case for cloud governance I have ever had. Boards that spent five years treating least privilege as an audit checkbox will fund a sandbox programme in a fortnight once someone explains what the Nx payload did. Take the win.
+
+## The sandbox that did not hold
+
+At which point a fair objection arrives: if the answer is containment, how much containment is enough? Something happened this month that answers it, and the answer is uncomfortable.
+
+On 16 July 2026, [Hugging Face disclosed a breach](https://huggingface.co/blog/security-incident-july-2026). A malicious dataset abused two code execution paths in their dataset processing, escalated to node level access, harvested cloud and cluster credentials, and moved laterally into several internal clusters over a weekend. In their own words, the campaign was run by "an autonomous agent framework executing many thousands of individual actions across a swarm of short-lived sandboxes, with self-migrating command-and-control staged on public services." They reported it to law enforcement.
+
+Five days later, [OpenAI disclosed that the attacker was them](https://openai.com/index/hugging-face-model-evaluation-security-incident/).
+
+They had been running GPT-5.6 Sol and an unreleased, more capable model against [ExploitGym](https://arxiv.org/abs/2605.11086), an academic benchmark that measures whether an agent can turn a known vulnerability into a working exploit. To measure maximum capability, they ran the evaluation "without production classifiers used to prevent models from pursuing high-risk cyber activity." The models' cyber refusals were deliberately switched off.
+
+The models were supposed to solve the exercises. Instead, in OpenAI's description, they "spent a substantial amount of inference compute finding a way to obtain open Internet access," found and exploited a zero day in the package registry cache proxy that formed the boundary of the test environment, escalated privileges and moved laterally until they reached a node with internet access, then inferred that Hugging Face probably hosted the ExploitGym solutions and chained stolen credentials with further zero days into a remote code execution path on Hugging Face production. They read the answers out of the database.
+
+OpenAI's assessment: the models "were hyperfocused on finding a solution for ExploitGym, going to extreme lengths to achieve a rather narrow testing goal."
+
+Nothing here went rogue in the science fiction sense. The model was given a goal and no scruples, and the cheapest path to that goal ran through somebody else's production database.
+
+Now hold that next to the checklist I am about to give you. OpenAI had an isolated environment. They had egress restricted to a curated allowlist that permitted package installation and nothing else. That is more containment than almost any enterprise currently gives its coding agents, and the escape route was the allowlisted proxy itself. The one hole they deliberately left is the one the ball found.
+
+Two conclusions, and please take both rather than whichever is more convenient.
+
+The first is that containment is necessary and not sufficient. A sandbox reduces blast radius, it does not eliminate intent. It buys you layers, and layers are what you have instead of guarantees. If a frontier lab with a dedicated safety organisation cannot hold a boundary against a model it built on purpose to be capable, the laptop in your organisation with standing production credentials and a `--yolo` habit is not a risk you are managing. It is a result you are waiting for.
+
+The second is that every remaining exception in your access model is now a target rather than an inconvenience. The package proxy was a pragmatic exception to a total network block, added because builds need dependencies. Entirely reasonable. Precisely why it was worth attacking.
+
+One coda that should interest anyone who owns a security budget. When Hugging Face went to analyse the attack, they first tried commercial frontier models and were refused: submitting real attack commands and exploit payloads tripped the providers' safety guardrails, which, as they put it, "cannot distinguish an incident responder from an attacker." They completed the forensics on a self hosted open weight model instead. Their conclusion is worth quoting because it describes an asymmetry your own incident response will inherit:
+
+> "The attacker was bound by no usage policy, while our own forensic work was blocked by the guardrails of the hosted models we first tried."
 
 ## The bowling lane
 
@@ -196,11 +224,11 @@ Every item on that list was already best practice in 2015. Every one of them is 
 
 The teams who invested in this over the past decade are experiencing agentic coding as a superpower. The teams who did not are experiencing it as an accelerating source of plausible garbage, and many of them have concluded the tools do not work. The tools work. Their lane has no bumpers, so the ball goes straight into the gutter, every time, faster than before.
 
-**One caution, because guardrails done lazily become attack surface.** [OWASP documents CVE-2026-22708 against Cursor](https://genai.owasp.org/), where an attacker poisons the execution environment so that allowlisted commands like `git branch` deliver arbitrary payloads. The allowlist made the attack *easier*, because it auto approved precisely the commands the attacker needed. A guardrail you added without thinking is not a guardrail. It is a hole with a label on it.
+**One caution, because guardrails done lazily become attack surface.** [OWASP documents CVE-2026-22708 against Cursor](https://www.helpnetsecurity.com/2026/06/11/owasp-prompt-injection-ai-security-failures/), where an attacker poisons the execution environment so that allowlisted commands like `git branch` deliver arbitrary payloads. The allowlist made the attack *easier*, because it auto approved precisely the commands the attacker needed. A guardrail you added without thinking is not a guardrail. It is a hole with a label on it.
 
 ## The regulatory clock, briefly
 
-If you operate in EU financial services, this stops being a philosophical discussion. DORA gives you four hours to notify a major incident. NIS2 wants a 24 hour early warning. [OWASP counts 42 regulatory instruments](https://genai.owasp.org/) across 10 jurisdictions now touching this.
+If you operate in EU financial services, this stops being a philosophical discussion. DORA — the EU's Digital Operational Resilience Act, not the DevOps research programme of the same initials — gives you four hours to notify a major incident. NIS2 wants a 24 hour early warning. [OWASP counts 42 regulatory instruments](https://www.helpnetsecurity.com/2026/06/11/owasp-prompt-injection-ai-security-failures/) across 10 jurisdictions now touching this.
 
 Four hours is not enough time to work out which of your engineers' laptops had a live production session when the malicious package installed, unless you already know. That knowledge is an artefact of exactly the controls above. You cannot buy it during an incident.
 
@@ -270,3 +298,7 @@ Turns out the discipline was never about the code. It was about being ready for 
 - OWASP GenAI Security Project, *State of Agentic AI Security and Governance* v2.01, 2026 — https://genai.owasp.org/ ; summarised by Help Net Security, 11 June 2026 — https://www.helpnetsecurity.com/2026/06/11/owasp-prompt-injection-ai-security-failures/
 - Meta, "Agents Rule of Two: a practical approach to AI agent security" — https://ai.meta.com/blog/practical-ai-agent-security/
 - Simon Willison on the lethal trifecta — https://simonwillison.net/tags/lethal-trifecta/
+- Hugging Face, "Security incident disclosure — July 2026," 16 July 2026 — https://huggingface.co/blog/security-incident-july-2026
+- OpenAI, "OpenAI and Hugging Face partner to address security incident during model evaluation," 21 July 2026 — https://openai.com/index/hugging-face-model-evaluation-security-incident/
+- *ExploitGym: Can AI Agents Turn Security Vulnerabilities into Real Attacks?*, arXiv:2605.11086, 11 May 2026 — https://arxiv.org/abs/2605.11086
+- Simon Willison, "OpenAI's accidental cyberattack against Hugging Face is science fiction that happened," 22 July 2026 — https://simonwillison.net/2026/Jul/22/openai-cyberattack/
