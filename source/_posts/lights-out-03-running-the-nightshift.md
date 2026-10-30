@@ -115,7 +115,7 @@ This is the practical payoff of the bowling lane from part 2. A fast, trustworth
 
 We run the reviewer as a genuinely separate pass with a genuinely adversarial prompt. Its job is to reject, not to bless. An agent asked "is this good?" says yes. An agent asked "find everything wrong with this against these rules" earns its keep. The output that survives that is not perfect. But it is reviewable, and reviewable is the bar.
 
-*(Getting this loop to behave, the prompts, the checklist, the failure modes, the ways Dobby learned to game his own reviewer, is a whole post in itself. That is **Lights Out, part 4: the lessons learned from configuring a coding agent.** It is the most hard won of the series and it is coming next.)*
+*(Getting this loop to behave, the prompts, the checklist, the failure modes, the ways Dobby learned to game his own reviewer, is a whole post in itself. That is **Lights Out, part 5: the lessons learned from configuring a coding agent.** It is the most hard won of the series, and it comes right after part 4.)*
 
 ## The hard part was never the agent
 
@@ -194,7 +194,7 @@ One line, for the people who scrolled straight here: a zero dependency Node and 
 
 ---
 
-*Next in this series: **Lights Out, part 4: the lessons learned from configuring a coding agent.** The prompts, the checklists, the failure modes, and all the ways Dobby surprised us: the hard won, unglamorous details of making the loop above actually behave.*
+*Next in this series: **Lights Out, part 4: the bottleneck moved.** Why agents did not remove the bottleneck from software development, but moved it, and where it is heading next. After that, **part 5: the lessons learned from configuring a coding agent.** The prompts, the checklists, the failure modes, and all the ways Dobby surprised us: the hard won, unglamorous details of making the loop above actually behave.*
 
 ---
 
